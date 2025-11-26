@@ -4,137 +4,137 @@
 create extension if not exists "pgcrypto";  -- Untuk UUID acak
 
 -- =======================================================
--- TABLE: users  (profil pengguna, sinkron dari auth.users)
+-- ENUMS
 -- =======================================================
-create table if not exists public.users (
-  id uuid primary key,                      -- ID dari auth.users
-  name text,
+create type public.enum_peran as enum ('admin', 'mahasiswa');
+create type public.enum_jenis_kelamin as enum ('L', 'P');
+create type public.enum_status_pertandingan as enum ('dijadwalkan', 'berlangsung', 'selesai');
+
+-- =======================================================
+-- TABEL: pengguna
+-- =======================================================
+create table if not exists public.pengguna (
+  id uuid primary key,                     -- ID dari auth.users
+  nama text,
   email text unique,
-  provider text,                            -- google, email, github, dll
-  provider_id text,
+  penyedia text,                           -- google, email, github, dll
+  id_penyedia text,
   avatar_url text,
 
   -- Role dasar sistem
-  role text not null default 'mahasiswa'
-    check (role in ('admin', 'mahasiswa')),
+  peran public.enum_peran not null default 'mahasiswa',
 
-  -- Identitas mahasiswa
-  nim text unique,
+  -- Identitas mahasiswa (nullable agar OAuth insert tidak gagal)
+  nim text,
   fakultas text,
   program_studi text,
-  jenis_kelamin text check (jenis_kelamin in ('L', 'P')),
+  jenis_kelamin public.enum_jenis_kelamin,
   tanggal_lahir date,
   alamat text,
   nomor_hp text,
-  
 
-  created_at timestamptz default now()
+  -- Status verifikasi identitas
+  is_verified boolean default false,
+
+  dibuat_pada timestamptz default now()
 );
 
-create index if not exists users_email_idx on public.users(email);
-create index if not exists users_nim_idx on public.users(nim);
-
+create index if not exists pengguna_email_idx on public.pengguna(email);
+create index if not exists pengguna_nim_idx on public.pengguna(nim);
 
 -- =======================================================
--- TABLE: sports
+-- TABEL: cabang_olahraga
 -- =======================================================
-create table if not exists public.sports (
+create table if not exists public.cabang_olahraga (
   id uuid primary key default gen_random_uuid(),
-  name text unique not null,
-  description text,
-  created_at timestamptz default now()
+  nama text unique not null,
+  deskripsi text,
+  dibuat_pada timestamptz default now()
 );
 
-create index if not exists sports_name_idx on public.sports(name);
-
+create index if not exists cabang_olahraga_nama_idx on public.cabang_olahraga(nama);
 
 -- =======================================================
--- TABLE: events
+-- TABEL: acara
 -- =======================================================
-create table if not exists public.events (
+create table if not exists public.acara (
   id uuid primary key default gen_random_uuid(),
-  name text not null,
-  type text,
-  sport_id uuid references public.sports(id) on delete set null,
-  location text,
+  nama text not null,
+  tipe text,
+  cabang_olahraga_id uuid references public.cabang_olahraga(id) on delete set null,
+  lokasi text,
 
-  -- Event dibuat oleh user
-  created_by uuid references public.users(id) on delete set null,
+  dibuat_oleh uuid references public.pengguna(id) on delete set null,
 
-  created_at timestamptz default now()
+  dibuat_pada timestamptz default now()
 );
 
-create unique index if not exists events_name_idx on public.events(name);
-
+create unique index if not exists acara_nama_idx on public.acara(nama);
 
 -- =======================================================
--- TABLE: participants
+-- TABEL: peserta
 -- =======================================================
-create table if not exists public.participants (
+create table if not exists public.peserta (
   id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references public.events(id) on delete cascade,
-  is_team boolean default true,
-  name text not null,
-  player_count int default 0 check (player_count >= 0),
-  created_at timestamptz default now()
+  acara_id uuid not null references public.acara(id) on delete cascade,
+  adalah_tim boolean default true,
+  nama text not null,
+  jumlah_pemain int default 0 check (jumlah_pemain >= 0),
+  dibuat_pada timestamptz default now()
 );
 
-create index if not exists participants_event_idx on public.participants(event_id);
-
+create index if not exists peserta_acara_idx on public.peserta(acara_id);
 
 -- =======================================================
--- TABLE: teams_players
+-- TABEL: anggota_tim
 -- =======================================================
-create table if not exists public.teams_players (
+create table if not exists public.anggota_tim (
   id uuid primary key default gen_random_uuid(),
-  participant_id uuid not null references public.participants(id) on delete cascade,
-  player_name text not null,
-  created_at timestamptz default now()
+  peserta_id uuid not null references public.peserta(id) on delete cascade,
+  nama_pemain text not null,
+  dibuat_pada timestamptz default now()
 );
 
-create index if not exists teams_players_participant_idx
-  on public.teams_players(participant_id);
-
+create index if not exists anggota_tim_peserta_idx
+  on public.anggota_tim(peserta_id);
 
 -- =======================================================
--- TABLE: matches
+-- TABEL: pertandingan
 -- =======================================================
-create table if not exists public.matches (
+create table if not exists public.pertandingan (
   id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references public.events(id) on delete cascade,
-  home_participant_id uuid references public.participants(id) on delete set null,
-  away_participant_id uuid references public.participants(id) on delete set null,
+  acara_id uuid not null references public.acara(id) on delete cascade,
+  peserta_tuan_rumah_id uuid references public.peserta(id) on delete set null,
+  peserta_tamu_id uuid references public.peserta(id) on delete set null,
 
-  match_date timestamptz,
+  tanggal_pertandingan timestamptz,
 
-  status text default 'scheduled'
-    check (status in ('scheduled', 'ongoing', 'finished')),
+  status public.enum_status_pertandingan default 'dijadwalkan',
 
-  home_score int default 0 check (home_score >= 0),
-  away_score int default 0 check (away_score >= 0),
+  skor_tuan_rumah int default 0 check (skor_tuan_rumah >= 0),
+  skor_tamu int default 0 check (skor_tamu >= 0),
 
-  duration_minutes int default 0,
-  current_minute int default 0,
+  durasi_menit int default 0,
+  menit_saat_ini int default 0,
 
-  field_location text,
-  created_at timestamptz default now()
+  lokasi_lapangan text,
+  dibuat_pada timestamptz default now()
 );
 
-create index if not exists matches_event_idx on public.matches(event_id);
-
+create index if not exists pertandingan_acara_idx on public.pertandingan(acara_id);
 
 -- =======================================================
--- TABLE: statistics
+-- TABEL: statistik
 -- =======================================================
-create table if not exists public.statistics (
+create table if not exists public.statistik (
   id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references public.events(id) on delete cascade unique,
+  acara_id uuid not null references public.acara(id) on delete cascade unique,
 
-  total_participants int default 0 check (total_participants >= 0),
-  total_matches int default 0 check (total_matches >= 0),
-  total_followers int default 0 check (total_followers >= 0),
+  total_peserta int default 0 check (total_peserta >= 0),
+  total_pertandingan int default 0 check (total_pertandingan >= 0),
+  total_pengikut int default 0 check (total_pengikut >= 0),
 
-  updated_at timestamptz default now()
+  diperbarui_pada timestamptz default now()
 );
 
-create index if not exists statistics_event_idx on public.statistics(event_id);
+create index if not exists statistik_acara_idx on public.statistik(acara_id);

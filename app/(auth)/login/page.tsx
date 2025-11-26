@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
@@ -20,6 +21,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const supabase = createClient();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<LoginForm>({
@@ -30,20 +32,55 @@ export default function LoginPage() {
   async function onSubmit(values: LoginForm) {
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: values.email,
-      password: values.password,
-    });
+    try {
+      // Login dengan email & password
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
 
-    setLoading(false);
+      if (error) throw error;
 
-    if (error) return alert(error.message);
+      if (!data?.user) throw new Error("Gagal mendapatkan data pengguna.");
 
-    window.location.href = "/dashboard";
+      const user = data.user;
+
+      // Ambil data pengguna dari tabel 'pengguna'
+      const { data: pengguna, error: penggunaError } = await supabase
+        .from("pengguna")
+        .select("is_verified")
+        .eq("id", user.id)
+        .single();
+
+      if (penggunaError) throw penggunaError;
+
+      // Redirect sesuai status verifikasi
+      if (!pengguna.is_verified) {
+        router.push("/konfirmasi-identitas");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function loginWithGoogle() {
-    await supabase.auth.signInWithOAuth({ provider: "google" });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/konfirmasi-identitas`,
+        },
+      });
+
+      if (error) throw error;
+      // Google OAuth akan otomatis redirect ke Supabase callback
+    } catch (err: any) {
+      alert(err.message);
+    }
   }
 
   return (
