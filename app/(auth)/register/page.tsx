@@ -50,7 +50,7 @@ export default function RegisterPage() {
       toast.success("Registrasi berhasil! Cek email Anda untuk verifikasi.");
 
       setTimeout(() => {
-        router.push("/auth/verify"); // Ubah sesuai kebutuhan
+        router.push("/verify"); // Ubah sesuai kebutuhan
       }, 1000);
     } finally {
       setLoading(false);

@@ -29,6 +29,34 @@ export default function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
+  async function ensureUserProfile(user: any) {
+    // Cek apakah row pengguna sudah ada
+    const { data: existingProfile } = await supabase
+      .from("pengguna")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (existingProfile) return existingProfile;
+
+    // Jika belum ada, buat row baru
+    const { data: created, error: createError } = await supabase
+      .from("pengguna")
+      .insert({
+        id: user.id,
+        email: user.email,
+        nama: user.user_metadata.full_name || "",
+        penyedia: user.app_metadata.provider || "email",
+        id_penyedia: user.id,
+        is_verified: false,
+      })
+      .select()
+      .single();
+
+    if (createError) throw createError;
+    return created;
+  }
+
   async function onSubmit(values: LoginForm) {
     setLoading(true);
 
@@ -39,29 +67,22 @@ export default function LoginPage() {
         password: values.password,
       });
 
-      if (error) throw error;
+      if (error) throw new Error("Email atau password salah.");
 
       if (!data?.user) throw new Error("Gagal mendapatkan data pengguna.");
-
       const user = data.user;
 
-      // Ambil data pengguna dari tabel 'pengguna'
-      const { data: pengguna, error: penggunaError } = await supabase
-        .from("pengguna")
-        .select("is_verified")
-        .eq("id", user.id)
-        .single();
-
-      if (penggunaError) throw penggunaError;
+      // Pastikan row di tabel "pengguna" ada
+      const profile = await ensureUserProfile(user);
 
       // Redirect sesuai status verifikasi
-      if (!pengguna.is_verified) {
+      if (!profile.is_verified) {
         router.push("/konfirmasi-identitas");
       } else {
         router.push("/dashboard");
       }
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || "Terjadi kesalahan saat login.");
     } finally {
       setLoading(false);
     }
@@ -77,7 +98,7 @@ export default function LoginPage() {
       });
 
       if (error) throw error;
-      // Google OAuth akan otomatis redirect ke Supabase callback
+
     } catch (err: any) {
       alert(err.message);
     }
@@ -114,17 +135,19 @@ export default function LoginPage() {
               )}
             </div>
 
-            <Button className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Memproses..." : "Masuk"}
             </Button>
           </form>
 
+          {/* Pembatas */}
           <div className="flex items-center my-4">
             <div className="flex-1 h-px bg-gray-300" />
             <span className="px-2 text-sm text-gray-500">atau</span>
             <div className="flex-1 h-px bg-gray-300" />
           </div>
 
+          {/* Login dengan Google */}
           <Button
             variant="outline"
             className="w-full flex items-center justify-center gap-3 border-gray-300 hover:bg-gray-100"
