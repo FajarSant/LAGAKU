@@ -11,10 +11,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { FcGoogle } from "react-icons/fc";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Nama minimal 2 karakter"),
+  nama: z.string().min(2, "Nama minimal 2 karakter"),
   email: z.string().email("Email tidak valid"),
   password: z.string().min(6, "Password minimal 6 karakter"),
 });
@@ -29,17 +28,24 @@ export default function RegisterPage() {
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: "", email: "", password: "" },
+    defaultValues: { nama: "", email: "", password: "" },
   });
 
+  /**
+   * REGISTER WITH EMAIL & PASSWORD
+   */
   async function onSubmit(values: RegisterForm) {
-    try {
-      setLoading(true);
+    setLoading(true);
 
+    try {
       const { error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: { data: { name: values.name } },
+        options: {
+          data: {
+            full_name: values.nama, // dipakai trigger Supabase
+          },
+        },
       });
 
       if (error) {
@@ -47,23 +53,14 @@ export default function RegisterPage() {
         return;
       }
 
-      toast.success("Registrasi berhasil! Cek email Anda untuk verifikasi.");
+      toast.success("Registrasi berhasil! Silakan cek email untuk verifikasi.");
 
-      setTimeout(() => {
-        router.push("/verify"); // Ubah sesuai kebutuhan
-      }, 1000);
+      setTimeout(() => router.push("/verify"), 1000);
+    } catch (err: any) {
+      toast.error(err?.message || "Terjadi kesalahan.");
     } finally {
       setLoading(false);
     }
-  }
-
-  async function googleRegister() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${location.origin}/auth/callback` },
-    });
-
-    if (error) toast.error(error.message);
   }
 
   return (
@@ -76,10 +73,10 @@ export default function RegisterPage() {
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <Input placeholder="Nama lengkap" {...form.register("name")} />
-              {form.formState.errors.name && (
+              <Input placeholder="Nama lengkap" {...form.register("nama")} />
+              {form.formState.errors.nama && (
                 <p className="text-red-500 text-sm">
-                  {form.formState.errors.name.message}
+                  {form.formState.errors.nama.message}
                 </p>
               )}
             </div>
@@ -110,30 +107,13 @@ export default function RegisterPage() {
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent animate-spin rounded-full" />
-                  Memproses...
+                  Membuat akun...
                 </div>
               ) : (
                 "Daftar"
               )}
             </Button>
           </form>
-
-          <div className="flex items-center my-4">
-            <div className="flex-1 h-px bg-gray-300" />
-            <span className="px-2 text-sm text-gray-500">atau</span>
-            <div className="flex-1 h-px bg-gray-300" />
-          </div>
-
-          <Button
-            variant="outline"
-            className="w-full flex items-center justify-center gap-3 border-gray-300 hover:bg-gray-100"
-            onClick={googleRegister}
-          >
-            <FcGoogle className="text-xl" />
-            <span className="text-gray-700 font-medium">
-              Daftar dengan Google
-            </span>
-          </Button>
 
           <p className="text-center mt-4 text-sm">
             Sudah punya akun?

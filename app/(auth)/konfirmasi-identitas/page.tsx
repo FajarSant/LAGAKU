@@ -97,7 +97,7 @@ export default function KonfirmasiIdentitasPage() {
 
     if (error) return alert(error.message);
 
-    router.replace("/dashboard"); // redirect setelah submit
+    router.replace("/"); // redirect setelah submit
   };
 
   return (

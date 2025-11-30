@@ -79,7 +79,7 @@ export default function LoginPage() {
       if (!profile.is_verified) {
         router.push("/konfirmasi-identitas");
       } else {
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch (err: any) {
       alert(err.message || "Terjadi kesalahan saat login.");
@@ -93,7 +93,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/konfirmasi-identitas`,
+          redirectTo: `${window.location.origin}/callback`,
         },
       });
 
