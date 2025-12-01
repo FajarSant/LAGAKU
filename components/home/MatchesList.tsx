@@ -110,6 +110,9 @@ export default function MatchesList() {
   if (!loading && totalRows === 0) {
     return (
       <section className="p-6">
+         <h2 className="text-center font-bold text-2xl mb-6">
+          Pertandingan Real-time
+        </h2>
         <h2 className="text-center mt-10 text-gray-500 text-xl">
           Tidak ada pertandingan
         </h2>
