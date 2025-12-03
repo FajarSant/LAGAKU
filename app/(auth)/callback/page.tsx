@@ -11,6 +11,7 @@ interface Pengguna {
   nama: string;
   penyedia: string;
   id_penyedia: string;
+  avatar_url?: string;
   is_verified: boolean;
 }
 
@@ -18,21 +19,29 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  async function ensureUserProfile(user: User): Promise<Pengguna> {
-    const { data: existing } = await supabase
+  /**
+   * Ensure user has a profile in the "pengguna" table.
+   */
+  const ensureUserProfile = async (user: User): Promise<Pengguna> => {
+    // 1. Check if user already exists
+    const { data: existing, error: existingError } = await supabase
       .from("pengguna")
       .select("*")
       .eq("id", user.id)
       .maybeSingle<Pengguna>();
 
+    if (existingError) console.error("Error fetching user profile:", existingError);
+
     if (existing) return existing;
 
+    // 2. Insert new user if not exists
     const { data, error } = await supabase
       .from("pengguna")
       .insert({
         id: user.id,
-        email: user.email ?? "",
+        email: user.email || "",
         nama: user.user_metadata.full_name || "",
+        avatar_url: user.user_metadata.avatar_url || null,
         penyedia: user.app_metadata.provider || "google",
         id_penyedia: user.id,
         is_verified: false,
@@ -42,30 +51,44 @@ export default function AuthCallbackPage() {
 
     if (error) throw error;
     return data;
-  }
+  };
 
+  /**
+   * Process Google OAuth Login
+   */
   useEffect(() => {
     const processGoogleLogin = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
 
-      if (!user) {
+        if (error) {
+          console.error("Auth error:", error);
+          return router.replace("/login");
+        }
+
+        if (!user) {
+          return router.replace("/login");
+        }
+
+        const profile = await ensureUserProfile(user);
+
+        // Routing berdasarkan kondisi verifikasi pengguna
+        if (!profile.is_verified) {
+          router.replace("/konfirmasi-identitas");
+        } else {
+          router.replace("/");
+        }
+      } catch (err) {
+        console.error("Login callback error:", err);
         router.replace("/login");
-        return;
-      }
-
-      const profile = await ensureUserProfile(user);
-
-      if (!profile.is_verified) {
-        router.replace("/konfirmasi-identitas");
-      } else {
-        router.replace("/");
       }
     };
 
     processGoogleLogin();
-  }, [router, supabase]);
+  }, [router]);
 
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center gap-6 animate-fade-in">
@@ -80,9 +103,7 @@ export default function AuthCallbackPage() {
 
       {/* TEXT */}
       <div className="text-center">
-        <p className="text-lg font-semibold text-gray-700">
-          Memproses login...
-        </p>
+        <p className="text-lg font-semibold text-gray-700">Memproses login...</p>
         <p className="text-sm text-gray-500 mt-1 animate-pulse">
           Mohon tunggu sebentar, kami sedang menghubungkan akun Anda.
         </p>

@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,26 +26,57 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+interface PenggunaProfile {
+  id: string;
+  nama: string;
+  email: string;
+  avatar_url?: string | null;
+}
+
 export default function Navigation() {
   const pathname = usePathname();
-  const [user, setUser] = useState<User | null>(null);
   const supabase = createClient();
 
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<PenggunaProfile | null>(null);
+
+  // ============================
+  // FETCH USER LOGIN
+  // ============================
   useEffect(() => {
-    const load = async () => {
+    const loadUser = async () => {
       const { data } = await supabase.auth.getUser();
-      setUser(data?.user ?? null);
+      const user = data?.user;
+
+      setAuthUser(user ?? null);
+
+      if (user) {
+        const { data: pengguna } = await supabase
+          .from("pengguna")
+          .select("id, nama, email, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        setProfile(pengguna ?? null);
+      }
     };
-    load();
+
+    loadUser();
   }, []);
 
+  // ==================================
+  // DATA YANG DIGUNAKAN DI NAVIGASI
+  // ==================================
   const username =
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    user?.email ||
-    "";
+    profile?.nama ||
+    authUser?.user_metadata?.full_name ||
+    authUser?.email ||
+    "User";
 
-  const avatarUrl = user?.user_metadata?.avatar_url || "/avatar.png";
+  const avatarUrl =
+    profile?.avatar_url ||
+    authUser?.user_metadata?.avatar_url ||
+    "/avatar.png";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -56,6 +86,9 @@ export default function Navigation() {
   const isActive = (path: string) =>
     pathname === path ? "text-primary font-semibold" : "text-gray-600";
 
+  // ============================
+  // RENDER
+  // ============================
   return (
     <nav className="w-full border-b bg-white sticky top-0 z-50">
       {/* DESKTOP NAV */}
@@ -68,29 +101,38 @@ export default function Navigation() {
 
         {/* CENTER MENU */}
         <div className="flex items-center gap-8 text-sm font-medium">
-          <Link href="/" className={`flex items-center gap-1 hover:text-primary transition ${isActive("/")}`}>
+          <Link href="/" className={`flex items-center gap-1 ${isActive("/")}`}>
             <Home className="h-4 w-4" /> Home
           </Link>
 
-          <Link href="/jadwal" className={`flex items-center gap-1 hover:text-primary transition ${isActive("/jadwal")}`}>
+          <Link
+            href="/jadwal"
+            className={`flex items-center gap-1 ${isActive("/jadwal")}`}
+          >
             <Calendar className="h-4 w-4" /> Jadwal
           </Link>
 
-          <Link href="/match" className={`flex items-center gap-1 hover:text-primary transition ${isActive("/match")}`}>
+          <Link
+            href="/match"
+            className={`flex items-center gap-1 ${isActive("/match")}`}
+          >
             <Trophy className="h-4 w-4" /> Pertandingan
           </Link>
 
-          <Link href="/register-tim" className={`flex items-center gap-1 hover:text-primary transition ${isActive("/register-tim")}`}>
+          <Link
+            href="/register-tim"
+            className={`flex items-center gap-1 ${isActive("/register-tim")}`}
+          >
             <Users className="h-4 w-4" /> Register Tim
           </Link>
         </div>
 
-        {/* RIGHT SIDE (LOGIN / USER) */}
-        {user ? (
+        {/* RIGHT SIDE USER */}
+        {authUser ? (
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar className="cursor-pointer">
-                <AvatarImage src={avatarUrl} />
+                <AvatarImage src={avatarUrl} alt="Avatar" />
                 <AvatarFallback>{username.charAt(0)}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
@@ -99,8 +141,8 @@ export default function Navigation() {
               <DropdownMenuLabel>{username}</DropdownMenuLabel>
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem className="flex gap-2 items-center" asChild>
-                <Link href="/profile">
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="flex gap-2 items-center">
                   <UserIcon className="h-4 w-4" /> Profil
                 </Link>
               </DropdownMenuItem>
@@ -126,22 +168,19 @@ export default function Navigation() {
       {/* MOBILE TOP BAR */}
       <div className="md:hidden px-4 flex justify-between items-center h-16">
         <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-          <Trophy className="h-6 w-6 text-primary" /> LigaKu
+          <Trophy className="h-6 w-6 text-primary" />
+          LigaKu
         </Link>
 
-        {/* If not logged in → show login */}
-        {!user ? (
-          <Link
-            href="/login"
-            className="flex items-center gap-1 text-primary font-semibold"
-          >
+        {!authUser ? (
+          <Link href="/login" className="flex items-center gap-1 text-primary">
             <LogIn className="h-5 w-5" /> Login
           </Link>
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <Avatar className="cursor-pointer">
-                <AvatarImage src={avatarUrl} />
+              <Avatar>
+                <AvatarImage src={avatarUrl} alt="Avatar" />
                 <AvatarFallback>{username.charAt(0)}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
