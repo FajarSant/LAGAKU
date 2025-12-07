@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "app/(admin)/tipe-olahraga/[id]/edit"  ],
   "exclude": ["node_modules"]
 }

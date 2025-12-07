@@ -3,151 +3,185 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { FiEdit, FiTrash2, FiPlus } from "react-icons/fi";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+
+import { FiPlus, FiMapPin, FiEdit, FiTrash } from "react-icons/fi";
 import Swal from "sweetalert2";
 
 interface Acara {
   id: string;
   nama: string;
-  tipe: string | null;
+  deskripsi: string | null;
   lokasi: string | null;
   url_lokasi_maps: string | null;
+  tipe_olahraga_id: string | null;
   dibuat_pada: string;
 }
 
 export default function AcaraPage() {
   const supabase = createClient();
   const [acara, setAcara] = useState<Acara[]>([]);
+  const [filtered, setFiltered] = useState<Acara[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
-  const loadData = async () => {
-    const { data } = await supabase
+  const fetchAcara = async () => {
+    const { data, error } = await supabase
       .from("acara")
-      .select("id, nama, tipe, lokasi, url_lokasi_maps, dibuat_pada")
+      .select("*")
       .order("dibuat_pada", { ascending: false });
 
-    setAcara(data || []);
+    if (!error && data) {
+      setAcara(data);
+      setFiltered(data);
+    }
     setLoading(false);
   };
 
   useEffect(() => {
-    loadData();
+    fetchAcara();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    const confirm = await Swal.fire({
-      title: "Hapus Acara?",
-      text: "Data yang dihapus tidak dapat dikembalikan.",
+  useEffect(() => {
+    const s = search.toLowerCase();
+    setFiltered(acara.filter((item) => item.nama.toLowerCase().includes(s)));
+  }, [search, acara]);
+
+  // ================================
+  // HANDLE DELETE
+  // ================================
+  const handleDelete = async (id: string, nama: string) => {
+    const result = await Swal.fire({
+      title: `Hapus Acara?`,
+      text: `Acara "${nama}" akan dihapus secara permanen.`,
       icon: "warning",
       showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6c757d",
       confirmButtonText: "Ya, hapus",
       cancelButtonText: "Batal",
     });
 
-    if (!confirm.isConfirmed) return;
+    if (result.isConfirmed) {
+      const { error } = await supabase.from("acara").delete().eq("id", id);
 
-    const res = await fetch(`/api/acara/hapus/${id}`, { method: "DELETE" });
-
-    if (res.ok) {
-      Swal.fire("Berhasil", "Acara berhasil dihapus", "success");
-      loadData();
-    } else {
-      Swal.fire("Gagal", "Terjadi kesalahan saat menghapus", "error");
+      if (!error) {
+        Swal.fire("Terhapus!", "Acara berhasil dihapus.", "success");
+        fetchAcara();
+      } else {
+        Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
+      }
     }
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Daftar Acara</h1>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Daftar Acara</h1>
 
-        <Link href="/acara/tambah">
-          <Button className="flex items-center gap-2">
-            <FiPlus size={16} />
+        <Button asChild className="gap-2">
+          <Link href="/acara/tambah">
+            <FiPlus />
             Tambah Acara
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nama</TableHead>
-              <TableHead>Tipe</TableHead>
-              <TableHead>Lokasi</TableHead>
-              <TableHead>Google Maps</TableHead>
-              <TableHead>Dibuat Pada</TableHead>
-              <TableHead className="text-right">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
+      {/* Search */}
+      <Input
+        placeholder="Cari acara..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="max-w-sm"
+      />
 
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-6">
-                  Memuat...
-                </TableCell>
-              </TableRow>
-            ) : acara.length ? (
-              acara.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell className="font-medium">{row.nama}</TableCell>
-                  <TableCell>{row.tipe || "-"}</TableCell>
-                  <TableCell>{row.lokasi || "-"}</TableCell>
-                  <TableCell>
-                    {row.url_lokasi_maps ? (
-                      <a
-                        href={row.url_lokasi_maps}
-                        target="_blank"
-                        className="text-blue-600 underline"
-                      >
-                        Lihat Maps
-                      </a>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(row.dibuat_pada).toLocaleDateString("id-ID")}
-                  </TableCell>
+      {/* Loading */}
+      {loading && <p className="text-muted-foreground">Memuat data...</p>}
 
-                  <TableCell className="text-right flex justify-end gap-2">
-                    <Link href={`/acara/edit/${row.id}`}>
-                      <Button variant="outline" size="sm">
-                        <FiEdit size={15} />
-                      </Button>
+      {/* List Card */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {filtered.map((item) => (
+          <Card
+            key={item.id}
+            className="hover:shadow-lg transition-all border border-neutral-200"
+          >
+            <CardHeader>
+              <CardTitle className="flex justify-between items-start">
+                <span className="font-semibold text-lg">{item.nama}</span>
+                <Badge
+                  variant="secondary"
+                  className="capitalize text-xs px-2 py-1"
+                >
+                  {item.tipe_olahraga_id ? "Olahraga" : "Umum"}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              {/* DESKRIPSI */}
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {item.deskripsi || "Tidak ada deskripsi"}
+              </p>
+
+              {/* LOKASI */}
+              {item.lokasi && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FiMapPin className="text-red-500" />
+                  <span>{item.lokasi}</span>
+                </div>
+              )}
+
+              {/* ACTION BUTTONS */}
+              <div className="space-y-2 pt-2">
+
+                {/* DETAIL BUTTON */}
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full rounded-lg"
+                >
+                  <Link href={`/acara/${item.id}`}>Lihat Detail</Link>
+                </Button>
+
+                {/* EDIT + DELETE */}
+                <div className="flex items-center justify-between gap-2">
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="flex-1 rounded-lg gap-2"
+                  >
+                    <Link href={`/acara/edit/${item.id}`}>
+                      <FiEdit size={18} />
+                      Edit
                     </Link>
+                  </Button>
 
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(row.id)}
-                    >
-                      <FiTrash2 size={15} />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-6">
-                  Tidak ada data acara.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  <Button
+                    variant="destructive"
+                    className="flex-1 rounded-lg gap-2"
+                    onClick={() => handleDelete(item.id, item.nama)}
+                  >
+                    <FiTrash size={18} />
+                    Hapus
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {/* EMPTY STATE */}
+      {!loading && filtered.length === 0 && (
+        <p className="text-center text-muted-foreground mt-10">
+          Tidak ada acara ditemukan.
+        </p>
+      )}
     </div>
   );
 }

@@ -38,6 +38,9 @@ create table if not exists public.pengguna (
     id uuid primary key default gen_random_uuid(),
     nama text not null,
     email text unique,
+    avatar_url text,
+    id_penyedia text,    
+    penyedia text,
     peran public.enum_peran not null default 'mahasiswa',
     nim text unique,
     fakultas text,
@@ -74,10 +77,11 @@ create index if not exists acara_tipe_idx on public.acara(tipe_olahraga_id);
 -- =======================================================
 create table if not exists public.tim (
     id uuid primary key default gen_random_uuid(),
-    acara_id uuid not null references public.acara(id) on delete cascade,
+    acara_id uuid references public.acara(id) on delete cascade
     nama text not null,
     jurusan text,
     angkatan text,
+    nomor_hp text,
     jumlah_pemain int default 0 check (jumlah_pemain >= 0),
     dibuat_pada timestamptz default now()
 );

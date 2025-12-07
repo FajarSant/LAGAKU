@@ -7,11 +7,19 @@ import type { User } from "@supabase/supabase-js";
 
 interface Pengguna {
   id: string;
-  email: string;
+  email: string | null;
   nama: string;
-  penyedia: string;
-  id_penyedia: string;
-  avatar_url?: string;
+  peran: string;
+  nim: string | null;
+  fakultas: string | null;
+  program_studi: string | null;
+  jenis_kelamin: "L" | "P" | null;
+  id_penyedia: string | null;
+  penyedia: string | null;
+  avatar_url: string | null;
+  tanggal_lahir: string | null;
+  alamat: string | null;
+  nomor_hp: string | null;
   is_verified: boolean;
 }
 
@@ -23,27 +31,36 @@ export default function AuthCallbackPage() {
    * Ensure user has a profile in the "pengguna" table.
    */
   const ensureUserProfile = async (user: User): Promise<Pengguna> => {
-    // 1. Check if user already exists
     const { data: existing, error: existingError } = await supabase
       .from("pengguna")
       .select("*")
       .eq("id", user.id)
       .maybeSingle<Pengguna>();
 
-    if (existingError) console.error("Error fetching user profile:", existingError);
+    if (existingError) {
+      console.error("Error fetch profile:", existingError);
+    }
 
     if (existing) return existing;
 
-    // 2. Insert new user if not exists
+    // Insert baru (disesuaikan dengan struktur tabel)
     const { data, error } = await supabase
       .from("pengguna")
       .insert({
         id: user.id,
-        email: user.email || "",
-        nama: user.user_metadata.full_name || "",
+        nama: user.user_metadata.full_name || "Pengguna Baru",
+        email: user.email ?? null,
+        peran: "mahasiswa",
+        nim: null,
         avatar_url: user.user_metadata.avatar_url || null,
-        penyedia: user.app_metadata.provider || "google",
+        penyedia: user.app_metadata.provider || null,
         id_penyedia: user.id,
+        fakultas: null,
+        program_studi: null,
+        jenis_kelamin: null,
+        tanggal_lahir: null,
+        alamat: null,
+        nomor_hp: null,
         is_verified: false,
       })
       .select()
@@ -64,18 +81,14 @@ export default function AuthCallbackPage() {
           error,
         } = await supabase.auth.getUser();
 
-        if (error) {
+        if (error || !user) {
           console.error("Auth error:", error);
-          return router.replace("/login");
-        }
-
-        if (!user) {
           return router.replace("/login");
         }
 
         const profile = await ensureUserProfile(user);
 
-        // Routing berdasarkan kondisi verifikasi pengguna
+        // Redirect berdasarkan verifikasi
         if (!profile.is_verified) {
           router.replace("/konfirmasi-identitas");
         } else {
@@ -92,16 +105,13 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center gap-6 animate-fade-in">
-      {/* SPINNER */}
       <div className="relative">
         <div className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-8 h-8 bg-primary/20 rounded-full animate-pulse"></div>
         </div>
       </div>
 
-      {/* TEXT */}
       <div className="text-center">
         <p className="text-lg font-semibold text-gray-700">Memproses login...</p>
         <p className="text-sm text-gray-500 mt-1 animate-pulse">
@@ -109,7 +119,6 @@ export default function AuthCallbackPage() {
         </p>
       </div>
 
-      {/* PROGRESS BAR */}
       <div className="w-48 h-1.5 rounded-full bg-gray-200 overflow-hidden">
         <div className="h-full bg-primary animate-progress"></div>
       </div>
