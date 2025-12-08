@@ -45,15 +45,19 @@ interface PertandinganRow {
   status: string;
 }
 
-export default function PertandinganListPage() {
+export default function PertandinganSayaPage() {
   const supabase = createClient();
 
   const [data, setData] = useState<PertandinganRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterAcara, setFilterAcara] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [acaraList, setAcaraList] = useState<AcaraRel[]>([]);
   const [sortAsc, setSortAsc] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const normalizeRel = (rel: any) => (Array.isArray(rel) ? rel[0] ?? null : rel ?? null);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -80,16 +84,15 @@ export default function PertandinganListPage() {
       if (acara) setAcaraList(acara);
 
       if (pertandingan) {
-        // Normalisasi Supabase relation (yang biasanya array)
         const fixed = pertandingan.map((p: any) => ({
           id: p.id,
           status: p.status,
           tanggal_pertandingan: p.tanggal_pertandingan,
           waktu_pertandingan: p.waktu_pertandingan,
           lokasi_lapangan: p.lokasi_lapangan,
-          acara: p.acara ? p.acara[0] ?? null : null,
-          tim_a: p.tim_a ? p.tim_a[0] ?? null : null,
-          tim_b: p.tim_b ? p.tim_b[0] ?? null : null,
+          acara: normalizeRel(p.acara),
+          tim_a: normalizeRel(p.tim_a),
+          tim_b: normalizeRel(p.tim_b),
         }));
 
         setData(fixed);
@@ -108,8 +111,9 @@ export default function PertandinganListPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hapus pertandingan ini?")) return;
-
+    setDeletingId(id);
     const { error } = await supabase.from("pertandingan").delete().eq("id", id);
+    setDeletingId(null);
     if (error) {
       toast.error("Gagal menghapus pertandingan.");
       return;
@@ -121,6 +125,7 @@ export default function PertandinganListPage() {
   const filtered = data
     .filter((r) => {
       if (filterAcara !== "all" && r.acara?.id !== filterAcara) return false;
+      if (filterStatus !== "all" && r.status !== filterStatus) return false;
 
       const s = search.toLowerCase();
       if (!s) return true;
@@ -139,25 +144,24 @@ export default function PertandinganListPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Pertandingan</h1>
+          <h1 className="text-2xl font-bold">Pertandingan Saya</h1>
           <p className="text-sm text-muted-foreground">
-            Kelola pertandingan (fun / cup / liga)
+            Daftar pertandingan yang terkait dengan tim Anda
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Input
             placeholder="Cari acara atau tim..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="min-w-[220px]"
+            className="min-w-[200px]"
           />
 
-          {/* FIX SELECT ERROR */}
           <Select value={filterAcara} onValueChange={setFilterAcara}>
-            <SelectTrigger className="w-[220px]">
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter acara" />
             </SelectTrigger>
             <SelectContent>
@@ -167,6 +171,18 @@ export default function PertandinganListPage() {
                   {ac.nama}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua status</SelectItem>
+              <SelectItem value="dijadwalkan">Dijadwalkan</SelectItem>
+              <SelectItem value="berlangsung">Berlangsung</SelectItem>
+              <SelectItem value="selesai">Selesai</SelectItem>
             </SelectContent>
           </Select>
 
@@ -187,65 +203,90 @@ export default function PertandinganListPage() {
           <CardTitle>Daftar Pertandingan</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Acara</TableHead>
-                <TableHead>Tim A</TableHead>
-                <TableHead>Tim B</TableHead>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Waktu</TableHead>
-                <TableHead>Lokasi</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {loading ? (
+          <div className="min-w-[750px]">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-6">
-                    Memuat...
-                  </TableCell>
+                  <TableHead>Acara</TableHead>
+                  <TableHead>Tim A</TableHead>
+                  <TableHead>Tim B</TableHead>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead>Waktu</TableHead>
+                  <TableHead>Lokasi</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Aksi</TableHead>
                 </TableRow>
-              ) : filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-6">
-                    Tidak ada pertandingan
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{p.acara?.nama ?? "-"}</TableCell>
-                    <TableCell>{p.tim_a?.nama ?? "-"}</TableCell>
-                    <TableCell>{p.tim_b?.nama ?? "-"}</TableCell>
-                    <TableCell>{p.tanggal_pertandingan ?? "-"}</TableCell>
-                    <TableCell>{p.waktu_pertandingan ?? "-"}</TableCell>
-                    <TableCell>{p.lokasi_lapangan ?? "-"}</TableCell>
-                    <TableCell className="capitalize">{p.status}</TableCell>
+              </TableHeader>
 
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Link href={`/pertandingan/edit/${p.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <FiEdit />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(p.id)}
+              <TableBody>
+                {loading
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i}>
+                        {Array.from({ length: 8 }).map((_, j) => (
+                          <TableCell key={j}>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  : filtered.length === 0
+                  ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-6">
+                          Tidak ada pertandingan
+                        </TableCell>
+                      </TableRow>
+                    )
+                  : filtered.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell>{p.acara?.nama ?? "-"}</TableCell>
+                        <TableCell>{p.tim_a?.nama ?? "-"}</TableCell>
+                        <TableCell>{p.tim_b?.nama ?? "-"}</TableCell>
+                        <TableCell>
+                          {p.tanggal_pertandingan
+                            ? new Date(p.tanggal_pertandingan).toLocaleDateString("id-ID", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : "-"}
+                        </TableCell>
+                        <TableCell>{p.waktu_pertandingan?.slice(0, 5) ?? "-"}</TableCell>
+                        <TableCell>{p.lokasi_lapangan ?? "-"}</TableCell>
+                        <TableCell
+                          className={`capitalize font-medium ${
+                            p.status === "berlangsung"
+                              ? "text-green-600"
+                              : p.status === "selesai"
+                              ? "text-gray-500"
+                              : "text-blue-600"
+                          }`}
                         >
-                          <FiTrash2 />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                          {p.status}
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Link href={`/pertandingan/edit/${p.id}`}>
+                              <Button variant="ghost" size="sm">
+                                <FiEdit />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(p.id)}
+                              disabled={deletingId === p.id}
+                            >
+                              {deletingId === p.id ? "Menghapus..." : <FiTrash2 />}
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

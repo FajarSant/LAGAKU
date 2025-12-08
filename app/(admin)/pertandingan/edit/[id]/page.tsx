@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import usePertandinganForm from "@/hooks/usePertandinganForm";
@@ -13,6 +13,8 @@ import JenisSelect from "@/components/admin/JenisSelect";
 import TimSelect from "@/components/admin/TimSelect";
 import TimMultiSelect from "@/components/admin/TimMultiSelect";
 import JadwalInput from "@/components/admin/JadwalInput";
+import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 
 const FormSchema = z.object({
   acara_id: z.string().min(1, "Acara harus dipilih"),
@@ -27,9 +29,14 @@ const FormSchema = z.object({
 
 type FormValues = z.infer<typeof FormSchema>;
 
-export default function TambahPertandinganPage() {
+export default function EditPertandinganPage() {
   const router = useRouter();
+  const params = useParams(); // pastikan route: /pertandingan/edit/[id]
+  const pertandinganId = params.id;
+  const supabase = createClient();
+
   const { acaraList, timList, loadTim, submitPertandingan } = usePertandinganForm();
+  const [loading, setLoading] = useState(true);
 
   const { register, handleSubmit, watch, setValue } = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -48,34 +55,99 @@ export default function TambahPertandinganPage() {
   const jenis = watch("jenis");
   const acaraId = watch("acara_id");
 
-  // Hanya load tim setelah acaraId tersedia
+  // Load pertandingan data
+  useEffect(() => {
+    const loadPertandingan = async () => {
+      const { data, error } = await supabase
+        .from("pertandingan")
+        .select(`
+          id,
+          acara_id,
+          tim_a_id,
+          tim_b_id,
+          status,
+          tanggal_pertandingan,
+          waktu_pertandingan,
+          lokasi_lapangan
+        `)
+        .eq("id", pertandinganId)
+        .single();
+
+      if (error || !data) {
+        toast.error("Gagal memuat data pertandingan.");
+        router.back();
+        return;
+      }
+
+      setValue("acara_id", data.acara_id);
+      setValue("tim_a_id", data.tim_a_id || "");
+      setValue("tim_b_id", data.tim_b_id || "");
+      setValue("tim_ids", data.tim_a_id && data.tim_b_id ? [data.tim_a_id, data.tim_b_id] : []);
+      setValue("tanggal_pertandingan", data.tanggal_pertandingan || "");
+      setValue("waktu_pertandingan", data.waktu_pertandingan || "");
+      setValue("lokasi_lapangan", data.lokasi_lapangan || "");
+
+      // Load tim terkait acara
+      if (data.acara_id) await loadTim(data.acara_id);
+      setLoading(false);
+    };
+
+    if (pertandinganId) loadPertandingan();
+  }, [pertandinganId, loadTim, router, setValue, supabase]);
+
+  // Reload tim saat acaraId berubah
   useEffect(() => {
     if (acaraId) loadTim(acaraId);
   }, [acaraId, loadTim]);
+
+  const onSubmit = async (values: FormValues) => {
+    try {
+      if (values.jenis === "fun") {
+        if (!values.tim_a_id || !values.tim_b_id) throw new Error("Pilih Tim A dan Tim B.");
+      }
+
+      await supabase
+        .from("pertandingan")
+        .update({
+          acara_id: values.acara_id,
+          tim_a_id: values.tim_a_id || null,
+          tim_b_id: values.tim_b_id || null,
+          tanggal_pertandingan: values.tanggal_pertandingan || null,
+          waktu_pertandingan: values.waktu_pertandingan || null,
+          lokasi_lapangan: values.lokasi_lapangan || null,
+        })
+        .eq("id", pertandinganId);
+
+      toast.success("Pertandingan berhasil diperbarui.");
+      router.push("/pertandingan");
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi error.");
+      console.error(err);
+    }
+  };
+
+  if (loading) return <div className="p-6 text-center">Memuat data...</div>;
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>Tambah Pertandingan / Generate</CardTitle>
+          <CardTitle>Edit Pertandingan</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit((v) => submitPertandingan(v, router))} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-            {/* Pilih Acara */}
             <AcaraSelect
               value={acaraId || ""}
               onChange={(v) => setValue("acara_id", v)}
               acaraList={acaraList || []}
             />
 
-            {/* Pilih Jenis Pertandingan */}
             <JenisSelect
               value={jenis}
               onChange={(v) => setValue("jenis", v)}
             />
 
-            {/* Fun Match: Pilih Tim A & B */}
             {jenis === "fun" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TimSelect
@@ -93,7 +165,6 @@ export default function TambahPertandinganPage() {
               </div>
             )}
 
-            {/* Cup / Liga: Pilih Banyak Tim */}
             {(jenis === "cup" || jenis === "liga") && (
               <TimMultiSelect
                 selected={watch("tim_ids") || []}
@@ -102,7 +173,6 @@ export default function TambahPertandinganPage() {
               />
             )}
 
-            {/* Input Jadwal & Lokasi */}
             <JadwalInput
               tanggal={watch("tanggal_pertandingan") || ""}
               waktu={watch("waktu_pertandingan") || ""}
@@ -114,9 +184,8 @@ export default function TambahPertandinganPage() {
               }}
             />
 
-            {/* Aksi */}
             <div className="flex gap-2">
-              <Button type="submit">Simpan / Generate</Button>
+              <Button type="submit">Simpan Perubahan</Button>
               <Button type="button" variant="outline" onClick={() => router.back()}>Batal</Button>
             </div>
 

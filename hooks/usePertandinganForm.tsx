@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -10,68 +11,40 @@ export default function usePertandinganForm() {
   const [timList, setTimList] = useState<{ id: string; nama: string }[]>([]);
   const [loadingTim, setLoadingTim] = useState(false);
 
+  // Load semua acara saat hook di-mount
   useEffect(() => {
     const loadAcara = async () => {
-      const { data } = await supabase.from("acara").select("id,nama").order("nama");
-      if (data) setAcaraList(data);
+      const { data, error } = await supabase.from("acara").select("id,nama").order("nama");
+      if (error) toast.error("Gagal memuat acara");
+      else setAcaraList(data || []);
     };
     loadAcara();
-  }, []);
+  }, [supabase]);
 
-  const loadTim = async (acaraId: string | undefined) => {
+  // Load tim berdasarkan acaraId
+const loadTim = useCallback(
+  async (acaraId?: string) => {
     if (!acaraId) {
       setTimList([]);
       return;
     }
     setLoadingTim(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("tim")
       .select("id,nama")
-      .eq("acara_id", acaraId)
       .order("nama");
-    if (data) setTimList(data);
+    if (error) toast.error("Gagal memuat tim");
+    else setTimList(data || []);
     setLoadingTim(false);
-  };
+  },
+  [supabase]
+);
 
-  const shuffle = <T,>(arr: T[]) => {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  };
-
-  const generateCup = async (acaraId: string, timIds: string[]) => {
-    const shuffled = shuffle(timIds);
-    const pairs: [string, string | null][] = [];
-    for (let i = 0; i < shuffled.length; i += 2) {
-      pairs.push([shuffled[i], shuffled[i + 1] || null]);
-    }
-
-    await supabase.from("pertandingan").insert(
-      pairs.map(([a, b]) => ({ acara_id: acaraId, tim_a_id: a, tim_b_id: b, status: "dijadwalkan" }))
-    );
-
-    await supabase.from("bracket").insert(
-      pairs.map(([a, b]) => ({ acara_id: acaraId, ronde: 1, tim_1_id: a, tim_2_id: b }))
-    );
-  };
-
-  const generateLiga = async (acaraId: string, timIds: string[]) => {
-    const pairs: [string, string][] = [];
-    for (let i = 0; i < timIds.length; i++) {
-      for (let j = i + 1; j < timIds.length; j++) pairs.push([timIds[i], timIds[j]]);
-    }
-
-    await supabase.from("pertandingan").insert(
-      pairs.map(([a, b]) => ({ acara_id: acaraId, tim_a_id: a, tim_b_id: b, status: "dijadwalkan" }))
-    );
-  };
-
+  // Submit pertandingan
   const submitPertandingan = async (values: any, router: any) => {
     try {
       if (!values.acara_id) throw new Error("Pilih acara.");
+
       if (values.jenis === "fun") {
         if (!values.tim_a_id || !values.tim_b_id) throw new Error("Pilih Tim A dan Tim B.");
         await supabase.from("pertandingan").insert({
@@ -88,18 +61,46 @@ export default function usePertandinganForm() {
         return;
       }
 
-      // CUP / LIGA
       const timIds = values.tim_ids || [];
       if (timIds.length < 2) throw new Error("Pilih minimal 2 tim.");
 
-      if (values.jenis === "cup") await generateCup(values.acara_id, timIds);
-      else if (values.jenis === "liga") await generateLiga(values.acara_id, timIds);
+      // CUP: buat pasangan random
+      if (values.jenis === "cup") {
+        const shuffled = [...timIds].sort(() => Math.random() - 0.5);
+        const pairs: [string, string | null][] = [];
+        for (let i = 0; i < shuffled.length; i += 2) {
+          pairs.push([shuffled[i], shuffled[i + 1] || null]);
+        }
+        await supabase.from("pertandingan").insert(
+          pairs.map(([a, b]) => ({
+            acara_id: values.acara_id,
+            tim_a_id: a,
+            tim_b_id: b,
+            status: "dijadwalkan",
+          }))
+        );
+      }
+
+      // LIGA: semua kombinasi tim
+      if (values.jenis === "liga") {
+        const pairs: [string, string][] = [];
+        for (let i = 0; i < timIds.length; i++)
+          for (let j = i + 1; j < timIds.length; j++)
+            pairs.push([timIds[i], timIds[j]]);
+        await supabase.from("pertandingan").insert(
+          pairs.map(([a, b]) => ({
+            acara_id: values.acara_id,
+            tim_a_id: a,
+            tim_b_id: b,
+            status: "dijadwalkan",
+          }))
+        );
+      }
 
       toast.success(`${values.jenis.toUpperCase()} berhasil digenerate.`);
       router.push("/pertandingan");
     } catch (err: any) {
       toast.error(err.message || "Terjadi error.");
-      console.error(err);
     }
   };
 
