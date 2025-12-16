@@ -2,32 +2,35 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { createClient } from "@/lib/supabase/client";
 import { z } from "zod";
-import {
-  Button
-} from "@/components/ui/button";
-import {
-  Input
-} from "@/components/ui/input";
-import {
-  Label
-} from "@/components/ui/label";
-import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-const AnggotaSchema = z.object({
-  nama_pemain: z.string().min(1, "Nama pemain harus diisi"),
-  nim: z.string().optional(),
-});
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 
+// ======================================================
+// ZOD SCHEMA
+// ======================================================
 const FormSchema = z.object({
-  nama: z.string().min(1, "Nama tim harus diisi"),
+  nama: z.string().min(1, "Nama tim wajib diisi"),
   jurusan: z.string().optional(),
   angkatan: z.string().optional(),
   nomor_hp: z.string().optional(),
-  anggota: z.array(AnggotaSchema).optional(),
+  acara_id: z.string().min(1, "Acara wajib dipilih"),
+  anggota: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        nama_pemain: z.string().min(1, "Nama pemain wajib diisi"),
+        nim: z.string().optional(),
+      })
+    )
+    .min(1, "Minimal 1 pemain"),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -36,176 +39,263 @@ export default function EditTimPage() {
   const router = useRouter();
   const params = useParams();
   const supabase = createClient();
-  const [loading, setLoading] = useState(false);
+  const timId = params.id as string;
 
-  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormValues>({
+  const [loading, setLoading] = useState(true);
+  const [loadingAcara, setLoadingAcara] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [acaraList, setAcaraList] = useState<{ id: string; nama: string }[]>([]);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      anggota: [],
-    },
+    defaultValues: { anggota: [] },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "anggota",
   });
 
-  // Load tim + anggota
-  const loadTim = async () => {
-    if (!params.id) return;
-    setLoading(true);
-
-    const { data: timData, error: timError } = await supabase
-      .from("tim")
-      .select("*")
-      .eq("id", params.id)
-      .single();
-
-    if (timError) {
-      toast.error(timError.message);
-      setLoading(false);
-      return;
-    }
-
-    const { data: anggotaData, error: anggotaError } = await supabase
-      .from("anggota_tim")
-      .select("*")
-      .eq("tim_id", params.id);
-
-    if (anggotaError) toast.error(anggotaError.message);
-
-    reset({
-      nama: timData.nama,
-      jurusan: timData.jurusan,
-      angkatan: timData.angkatan,
-      nomor_hp: timData.nomor_hp,
-      anggota: anggotaData || [],
-    });
-
-    setLoading(false);
-  };
-
+  // ======================================================
+  // LOAD ACARA
+  // ======================================================
   useEffect(() => {
-    loadTim();
-  }, [params.id]);
+    const loadAcara = async () => {
+      const { data } = await supabase
+        .from("acara")
+        .select("id, nama")
+        .order("nama");
 
-  const onSubmit = async (values: FormValues) => {
-    if (!params.id) return;
-    setLoading(true);
+      if (data) setAcaraList(data);
+      setLoadingAcara(false);
+    };
 
-    // Update tim
-    const { error: timError } = await supabase
-      .from("tim")
-      .update({
-        nama: values.nama,
-        jurusan: values.jurusan,
-        angkatan: values.angkatan,
-        nomor_hp: values.nomor_hp,
-      })
-      .eq("id", params.id);
+    loadAcara();
+  }, []);
 
-    if (timError) {
-      toast.error(timError.message);
-      setLoading(false);
-      return;
-    }
+  // ======================================================
+  // LOAD TIM
+  // ======================================================
+  useEffect(() => {
+    const loadTim = async () => {
+      const { data, error } = await supabase
+        .from("tim")
+        .select(
+          `
+          id, nama, jurusan, angkatan, nomor_hp, acara_id,
+          anggota_tim ( id, nama_pemain, nim )
+        `
+        )
+        .eq("id", timId)
+        .single();
 
-    // Hapus semua anggota lama
-    const { error: delError } = await supabase
-      .from("anggota_tim")
-      .delete()
-      .eq("tim_id", params.id);
-
-    if (delError) {
-      toast.error(delError.message);
-      setLoading(false);
-      return;
-    }
-
-    // Tambahkan anggota baru
-    if (values.anggota && values.anggota.length > 0) {
-      const { error: insError } = await supabase
-        .from("anggota_tim")
-        .insert(values.anggota.map(a => ({ ...a, tim_id: params.id })));
-
-      if (insError) {
-        toast.error(insError.message);
-        setLoading(false);
+      if (error || !data) {
+        router.push("/admin/tim");
         return;
       }
-    }
 
-    toast.success("Tim berhasil diperbarui");
-    router.push("/tim");
-    setLoading(false);
+      reset({
+        nama: data.nama,
+        jurusan: data.jurusan ?? "",
+        angkatan: data.angkatan ?? "",
+        nomor_hp: data.nomor_hp ?? "",
+        acara_id: data.acara_id,
+        anggota: data.anggota_tim.map((a: any) => ({
+          id: a.id,
+          nama_pemain: a.nama_pemain,
+          nim: a.nim ?? "",
+        })),
+      });
+
+      replace(
+        data.anggota_tim.map((a: any) => ({
+          id: a.id,
+          nama_pemain: a.nama_pemain,
+          nim: a.nim ?? "",
+        }))
+      );
+
+      setLoading(false);
+    };
+
+    loadTim();
+  }, [timId, replace, reset, router, supabase]);
+
+  // ======================================================
+  // SUBMIT
+  // ======================================================
+  const onSubmit = async (values: FormValues) => {
+    setSubmitting(true);
+
+    try {
+      // Update tim
+      await supabase
+        .from("tim")
+        .update({
+          nama: values.nama,
+          jurusan: values.jurusan || null,
+          angkatan: values.angkatan || null,
+          nomor_hp: values.nomor_hp || null,
+          acara_id: values.acara_id,
+        })
+        .eq("id", timId);
+
+      // Ambil ID anggota yang masih ada
+      const keepIds = values.anggota.map((a) => a.id).filter(Boolean);
+
+      // Hapus anggota yang dihapus di UI
+      await supabase
+        .from("anggota_tim")
+        .delete()
+        .eq("tim_id", timId)
+        .not("id", "in", `(${keepIds.join(",")})`);
+
+      // Upsert anggota
+      await supabase.from("anggota_tim").upsert(
+        values.anggota.map((a) => ({
+          id: a.id,
+          tim_id: timId,
+          nama_pemain: a.nama_pemain,
+          nim: a.nim || null,
+        })),
+        { onConflict: "id" }
+      );
+
+      router.push("/admin/tim");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
+  // ======================================================
+  // UI
+  // ======================================================
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">Edit Tim</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Info Tim */}
-        <div className="grid grid-cols-1 gap-4">
-          <div>
-            <Label>Nama Tim</Label>
-            <Input type="text" {...register("nama")} />
-            {errors.nama && <p className="text-red-500 text-sm">{errors.nama.message}</p>}
-          </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">
+            Edit Tim & Anggota
+          </CardTitle>
+        </CardHeader>
 
-          <div>
-            <Label>Jurusan</Label>
-            <Input type="text" {...register("jurusan")} />
-          </div>
-
-          <div>
-            <Label>Angkatan</Label>
-            <Input type="text" {...register("angkatan")} />
-          </div>
-
-          <div>
-            <Label>Nomor HP</Label>
-            <Input type="text" {...register("nomor_hp")} />
-          </div>
-        </div>
-
-        {/* Anggota Tim */}
-        <div className="space-y-2">
-          <h2 className="font-medium text-lg">Anggota Tim</h2>
-          {fields.map((field, index) => (
-            <div key={field.id} className="grid grid-cols-3 gap-4 items-end">
+        <CardContent>
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
-                <Label>Nama Pemain</Label>
-                <Input
-                  type="text"
-                  {...register(`anggota.${index}.nama_pemain` as const)}
-                />
+                <Label>Nama Tim</Label>
+                <Input {...register("nama")} />
+                {errors.nama && (
+                  <p className="text-sm text-red-500">
+                    {errors.nama.message}
+                  </p>
+                )}
               </div>
+
               <div>
-                <Label>NIM</Label>
-                <Input type="text" {...register(`anggota.${index}.nim` as const)} />
+                <Label>Acara</Label>
+                {loadingAcara ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <select
+                    {...register("acara_id")}
+                    className="w-full h-10 border rounded px-2"
+                  >
+                    <option value="">-- Pilih Acara --</option>
+                    {acaraList.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.nama}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
-              <div className="flex gap-2">
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label>Jurusan</Label>
+                  <Input {...register("jurusan")} />
+                </div>
+                <div>
+                  <Label>Angkatan</Label>
+                  <Input {...register("angkatan")} />
+                </div>
+                <div>
+                  <Label>Nomor HP</Label>
+                  <Input {...register("nomor_hp")} />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Anggota Tim</Label>
+
+                {fields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-3"
+                  >
+                    <Input
+                      {...register(`anggota.${index}.nama_pemain`)}
+                      placeholder="Nama pemain"
+                    />
+                    <Input
+                      {...register(`anggota.${index}.nim`)}
+                      placeholder="NIM"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => remove(index)}
+                      >
+                        Hapus
+                      </Button>
+                      {index === fields.length - 1 && (
+                        <Button
+                          type="button"
+                          onClick={() =>
+                            append({ nama_pemain: "", nim: "" })
+                          }
+                        >
+                          Tambah
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? "Menyimpan..." : "Simpan"}
+                </Button>
                 <Button
                   type="button"
-                  variant="destructive"
-                  onClick={() => remove(index)}
+                  variant="outline"
+                  onClick={() => router.back()}
                 >
-                  Hapus
+                  Batal
                 </Button>
               </div>
-            </div>
-          ))}
-
-          <Button type="button" onClick={() => append({ nama_pemain: "", nim: "" })}>
-            Tambah Anggota
-          </Button>
-        </div>
-
-        <div className="flex gap-2 mt-4">
-          <Button type="submit" disabled={loading}>Simpan</Button>
-          <Button type="button" variant="outline" onClick={() => router.push("/tim")}>Batal</Button>
-        </div>
-      </form>
+            </form>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

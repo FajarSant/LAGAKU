@@ -21,12 +21,11 @@ import {
   FiUserCheck,
   FiBarChart2,
   FiSettings,
-  FiAward,
   FiLayers,
   FiActivity,
   FiCrosshair,
   FiGrid,
-  FiTarget,
+  FiShuffle,
 } from "react-icons/fi";
 
 interface MenuItem {
@@ -41,6 +40,7 @@ interface MenuItem {
 // ===============================
 //
 
+// MENU UTAMA
 const menuUtama: MenuItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: FiHome },
   { title: "Acara", url: "/acara", icon: FiCalendar },
@@ -49,25 +49,28 @@ const menuUtama: MenuItem[] = [
   { title: "Peserta", url: "/peserta", icon: FiUserCheck },
 ];
 
+// SISTEM PERTANDINGAN (berdasarkan tipe_acara)
 const menuPertandingan: MenuItem[] = [
-  { title: "Semua Pertandingan", url: "/pertandingan", icon: FiAward },
-  { title: "Fun Match", url: "/pertandingan/fun-match", icon: FiTarget },
-  { title: "Cup / Liga", url: "/pertandingan/cup-liga", icon: FiGrid },
+  { title: "Semua Pertandingan", url: "/pertandingan", icon: FiGrid },
   { title: "Sistem Gugur (Bracket)", url: "/pertandingan/bracket", icon: FiCrosshair },
+  { title: "Sistem Kompetisi", url: "/pertandingan/kompetisi", icon: FiGrid },
+  { title: "Sistem Campuran", url: "/pertandingan/campuran", icon: FiShuffle },
 ];
 
+// MANAJEMEN
 const menuManajemen: MenuItem[] = [
   { title: "Pengguna", url: "/pengguna", icon: FiUsers },
   { title: "Statistik", url: "/statistik", icon: FiBarChart2 },
 ];
 
+// PENGATURAN
 const menuPengaturan: MenuItem[] = [
   { title: "Settings", url: "/settings", icon: FiSettings },
 ];
 
 //
 // ===============================
-// MAIN COMPONENT
+// MAIN SIDEBAR COMPONENT
 // ===============================
 //
 
@@ -103,7 +106,7 @@ export function SidebarAdmin() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* PERTANDINGAN */}
+        {/* SISTEM PERTANDINGAN */}
         <SidebarGroup>
           <SidebarGroupLabel>Sistem Pertandingan</SidebarGroupLabel>
           <SidebarGroupContent>

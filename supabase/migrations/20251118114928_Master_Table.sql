@@ -6,6 +6,7 @@ create extension if not exists "pgcrypto";
 -- =======================================================
 -- ENUMS
 -- =======================================================
+
 do $$ begin
     create type public.enum_peran as enum ('admin', 'mahasiswa');
 exception when duplicate_object then null;
@@ -17,19 +18,21 @@ exception when duplicate_object then null;
 end $$;
 
 do $$ begin
-    create type public.enum_status_pertandingan as enum ('dijadwalkan', 'berlangsung', 'selesai');
+    create type public.enum_status_match as enum (
+        'dijadwalkan',
+        'berlangsung',
+        'selesai'
+    );
 exception when duplicate_object then null;
 end $$;
 
--- =======================================================
--- TABLE: tipe_olahraga
--- =======================================================
-create table if not exists public.tipe_olahraga (
-    id uuid primary key default gen_random_uuid(),
-    nama text not null unique,
-    deskripsi text,
-    dibuat_pada timestamptz default now()
-);
+do $$ begin
+    create type public.enum_status_tim as enum (
+        'aktif',
+        'gugur'
+    );
+exception when duplicate_object then null;
+end $$;
 
 -- =======================================================
 -- TABLE: pengguna
@@ -39,7 +42,7 @@ create table if not exists public.pengguna (
     nama text not null,
     email text unique,
     avatar_url text,
-    id_penyedia text,    
+    id_penyedia text,
     penyedia text,
     peran public.enum_peran not null default 'mahasiswa',
     nim text unique,
@@ -57,33 +60,30 @@ create index if not exists pengguna_email_idx on public.pengguna(email);
 create index if not exists pengguna_nim_idx on public.pengguna(nim);
 
 -- =======================================================
--- TABLE: acara
+-- TABLE: acara (TURNAMEN GUGUR)
 -- =======================================================
 create table if not exists public.acara (
     id uuid primary key default gen_random_uuid(),
     nama text not null unique,
     deskripsi text,
-    tipe_olahraga_id uuid references public.tipe_olahraga(id) on delete set null,
-    lokasi text,
-    url_lokasi_maps text,
     dibuat_oleh uuid references public.pengguna(id) on delete set null,
     dibuat_pada timestamptz default now()
 );
-
-create index if not exists acara_tipe_idx on public.acara(tipe_olahraga_id);
 
 -- =======================================================
 -- TABLE: tim
 -- =======================================================
 create table if not exists public.tim (
     id uuid primary key default gen_random_uuid(),
-    acara_id uuid references public.acara(id) on delete cascade,
+    acara_id uuid not null references public.acara(id) on delete cascade,
     nama text not null,
     jurusan text,
     angkatan text,
     nomor_hp text,
     jumlah_pemain int default 0 check (jumlah_pemain >= 0),
-    dibuat_pada timestamptz default now()
+    status public.enum_status_tim default 'aktif',
+    dibuat_pada timestamptz default now(),
+    unique (acara_id, nama)
 );
 
 create index if not exists tim_acara_idx on public.tim(acara_id);
@@ -102,45 +102,84 @@ create table if not exists public.anggota_tim (
 create index if not exists anggota_tim_tim_idx on public.anggota_tim(tim_id);
 
 -- =======================================================
--- TABLE: pertandingan
+-- TABLE: round (BABAK TURNAMEN)
+-- =======================================================
+create table public.round (
+    id uuid primary key default gen_random_uuid(),
+    acara_id uuid not null references public.acara(id) on delete cascade,
+
+    nama text not null,
+    urutan int not null,
+
+    min_tim int not null,
+    max_tim int not null,
+
+    dibuat_pada timestamptz default now(),
+
+    constraint round_tim_check check (min_tim <= max_tim),
+    unique (acara_id, urutan)
+);
+
+
+create index if not exists round_acara_idx on public.round(acara_id);
+
+-- =======================================================
+-- TABLE: pertandingan (MATCH GUGUR)
 -- =======================================================
 create table if not exists public.pertandingan (
     id uuid primary key default gen_random_uuid(),
     acara_id uuid not null references public.acara(id) on delete cascade,
+    round_id uuid not null references public.round(id) on delete cascade,
 
-    -- Tim A & B (rename request)
-    tim_a_id uuid references public.tim(id) on delete set null,
-    tim_b_id uuid references public.tim(id) on delete set null,
+    tim_a_id uuid not null references public.tim(id),
+    tim_b_id uuid references public.tim(id), 
 
-    -- Detail pertandingan
-    status public.enum_status_pertandingan default 'dijadwalkan',
-    skor_tim_a int default 0 check (skor_tim_a >= 0),
-    skor_tim_b int default 0 check (skor_tim_b >= 0),
+    skor_tim_a int check (skor_tim_a >= 0),
+    skor_tim_b int check (skor_tim_b >= 0),
+
+    pemenang_id uuid references public.tim(id),
+
+    status public.enum_status_match default 'dijadwalkan',
 
     tanggal_pertandingan date,
     waktu_pertandingan time,
-    durasi_pertandingan int default 0, -- total menit
+    durasi_pertandingan int default 0,
 
     lokasi_lapangan text,
     url_lokasi_maps text,
 
-    dibuat_pada timestamptz default now()
+    dibuat_pada timestamptz default now(),
+
+    
+    check (tim_b_id is null or tim_a_id <> tim_b_id),
+    check (
+      pemenang_id is null
+      or pemenang_id = tim_a_id
+      or pemenang_id = tim_b_id
+    )
 );
+create unique index if not exists unique_tim_a_per_round
+on public.pertandingan(round_id, tim_a_id);
+
+create unique index if not exists unique_tim_b_per_round
+on public.pertandingan(round_id, tim_b_id)
+where tim_b_id is not null;
 
 create index if not exists pertandingan_acara_idx on public.pertandingan(acara_id);
+create index if not exists pertandingan_round_idx on public.pertandingan(round_id);
 create index if not exists pertandingan_tim_idx on public.pertandingan(tim_a_id, tim_b_id);
 
 -- =======================================================
--- TABLE: bracket
+-- PROTEKSI DATA (REKOMENDASI KERAS)
 -- =======================================================
-create table if not exists public.bracket (
-    id uuid primary key default gen_random_uuid(),
-    acara_id uuid not null references public.acara(id) on delete cascade,
-    ronde int not null,
-    tim_1_id uuid references public.tim(id) on delete set null,
-    tim_2_id uuid references public.tim(id) on delete set null,
-    pemenang_id uuid references public.tim(id) on delete set null,
-    dibuat_pada timestamptz default now()
-);
 
-create index if not exists bracket_acara_idx on public.bracket(acara_id);
+-- Satu tim hanya boleh bermain sekali di satu round
+-- Tim A hanya boleh 1x di round
+create unique index if not exists unique_tim_a_per_round
+on public.pertandingan(round_id, tim_a_id);
+
+-- Tim B hanya boleh 1x di round (kecuali NULL / BYE)
+create unique index if not exists unique_tim_b_per_round
+on public.pertandingan(round_id, tim_b_id)
+where tim_b_id is not null;
+

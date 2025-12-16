@@ -4,172 +4,149 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
-
-interface Acara {
-  id: string;
-  nama_acara: string;
-  lokasi: string;
-  tanggal_mulai: string;
-  tanggal_selesai: string;
-  deskripsi: string;
-}
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditAcaraPage() {
-  const params = useParams();
   const router = useRouter();
+  const params = useParams();
   const supabase = createClient();
 
   const [loading, setLoading] = useState(true);
-  const [acara, setAcara] = useState<Acara | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    nama_acara: "",
-    lokasi: "",
-    tanggal_mulai: "",
-    tanggal_selesai: "",
+    nama: "",
     deskripsi: "",
   });
 
-  // Fetch Acara
+  // ===========================
+  // FETCH DATA
+  // ===========================
   useEffect(() => {
-    const fetchAcara = async () => {
+    const loadData = async () => {
       const { data, error } = await supabase
         .from("acara")
-        .select("*")
+        .select("nama, deskripsi")
         .eq("id", params.id)
         .single();
 
       if (error || !data) {
-        toast.error("Data acara tidak ditemukan");
         router.push("/acara");
         return;
       }
 
-      setAcara(data);
       setForm({
-        nama_acara: data.nama_acara,
-        lokasi: data.lokasi,
-        tanggal_mulai: data.tanggal_mulai,
-        tanggal_selesai: data.tanggal_selesai,
-        deskripsi: data.deskripsi,
+        nama: data.nama,
+        deskripsi: data.deskripsi ?? "",
       });
 
       setLoading(false);
     };
 
-    fetchAcara();
-  }, [params.id]);
+    loadData();
+  }, [params.id, router, supabase]);
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  // ===========================
+  // SUBMIT UPDATE
+  // ===========================
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
 
     const { error } = await supabase
       .from("acara")
-      .update(form)
+      .update({
+        nama: form.nama,
+        deskripsi: form.deskripsi,
+      })
       .eq("id", params.id);
 
-    if (error) {
-      toast.error("Gagal memperbarui acara");
-      return;
-    }
+    setSaving(false);
 
-    toast.success("Acara berhasil diperbarui");
-    router.push("/acara");
+    if (!error) {
+      router.push("/acara");
+      router.refresh();
+    }
   };
 
-  if (loading)
+  // ===========================
+  // SKELETON
+  // ===========================
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-[60vh] text-sm">
-        Memuat data acara...
+      <div className="p-6 flex justify-center">
+        <Card className="w-full max-w-3xl">
+          <CardHeader>
+            <Skeleton className="h-6 w-48 mx-auto" />
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
       </div>
     );
+  }
 
+  // ===========================
+  // PAGE
+  // ===========================
   return (
-    <div className="w-full mt-10">
-      <Card className="shadow-md border">
+    <div className="p-6 flex justify-center">
+      <Card className="w-full max-w-3xl shadow border">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold">
-            Edit Acara: {acara?.nama_acara}
+          <CardTitle className="text-xl text-center font-bold">
+            Edit Turnamen Gugur
           </CardTitle>
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleUpdate} className="space-y-6">
-
-            {/* GRID 2 KOLOM */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* Nama Acara */}
-              <div className="flex flex-col space-y-2">
-                <Label>Nama Acara</Label>
-                <Input
-                  value={form.nama_acara}
-                  onChange={(e) =>
-                    setForm({ ...form, nama_acara: e.target.value })
-                  }
-                  placeholder="Masukkan nama acara"
-                />
-              </div>
-
-              {/* Lokasi */}
-              <div className="flex flex-col space-y-2">
-                <Label>Lokasi</Label>
-                <Input
-                  value={form.lokasi}
-                  onChange={(e) =>
-                    setForm({ ...form, lokasi: e.target.value })
-                  }
-                  placeholder="Masukkan lokasi acara"
-                />
-              </div>
-
-              {/* Tanggal Mulai */}
-              <div className="flex flex-col space-y-2">
-                <Label>Tanggal Mulai</Label>
-                <Input
-                  type="date"
-                  value={form.tanggal_mulai}
-                  onChange={(e) =>
-                    setForm({ ...form, tanggal_mulai: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* Tanggal Selesai */}
-              <div className="flex flex-col space-y-2">
-                <Label>Tanggal Selesai</Label>
-                <Input
-                  type="date"
-                  value={form.tanggal_selesai}
-                  onChange={(e) =>
-                    setForm({ ...form, tanggal_selesai: e.target.value })
-                  }
-                />
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* NAMA */}
+            <div className="space-y-2">
+              <Label>Nama Turnamen</Label>
+              <Input
+                value={form.nama}
+                onChange={(e) =>
+                  setForm({ ...form, nama: e.target.value })
+                }
+                required
+              />
             </div>
 
-            {/* Deskripsi Full Width */}
-            <div className="flex flex-col space-y-2">
+            {/* DESKRIPSI */}
+            <div className="space-y-2">
               <Label>Deskripsi</Label>
               <Textarea
                 value={form.deskripsi}
                 onChange={(e) =>
                   setForm({ ...form, deskripsi: e.target.value })
                 }
-                placeholder="Masukkan deskripsi acara"
                 className="min-h-[120px]"
               />
             </div>
 
-            <Button type="submit" className="w-full md:w-auto">
-              Simpan Perubahan
-            </Button>
+            {/* ACTION */}
+            <div className="flex flex-col gap-3">
+              <Button type="submit" disabled={saving}>
+                {saving ? "Menyimpan..." : "Simpan Perubahan"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/acara")}
+              >
+                Batal
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

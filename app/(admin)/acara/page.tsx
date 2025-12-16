@@ -9,16 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
-import { FiPlus, FiMapPin, FiEdit, FiTrash } from "react-icons/fi";
+import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
 import Swal from "sweetalert2";
 
 interface Acara {
   id: string;
   nama: string;
   deskripsi: string | null;
-  lokasi: string | null;
-  url_lokasi_maps: string | null;
-  tipe_olahraga_id: string | null;
+  tipe_acara: "SISTEM_GUGUR" | "SISTEM_KOMPETISI" | "SISTEM_CAMPURAN";
   dibuat_pada: string;
 }
 
@@ -51,9 +49,6 @@ export default function AcaraPage() {
     setFiltered(acara.filter((item) => item.nama.toLowerCase().includes(s)));
   }, [search, acara]);
 
-  // ================================
-  // HANDLE DELETE
-  // ================================
   const handleDelete = async (id: string, nama: string) => {
     const result = await Swal.fire({
       title: `Hapus Acara?`,
@@ -76,6 +71,13 @@ export default function AcaraPage() {
         Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
       }
     }
+  };
+
+  // Mapping ENUM → Label yang lebih bagus
+  const jenisAcaraLabel: Record<string, string> = {
+    sistem_gugur: "Sistem Gugur",
+    sistem_kompetisi: "Sistem Kompetisi",
+    sistem_campuran: "Sistem Campuran",
   };
 
   return (
@@ -113,11 +115,9 @@ export default function AcaraPage() {
             <CardHeader>
               <CardTitle className="flex justify-between items-start">
                 <span className="font-semibold text-lg">{item.nama}</span>
-                <Badge
-                  variant="secondary"
-                  className="capitalize text-xs px-2 py-1"
-                >
-                  {item.tipe_olahraga_id ? "Olahraga" : "Umum"}
+
+                <Badge variant="secondary" className="capitalize text-xs px-2 py-1">
+                  {jenisAcaraLabel[item.tipe_acara]}
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -128,23 +128,11 @@ export default function AcaraPage() {
                 {item.deskripsi || "Tidak ada deskripsi"}
               </p>
 
-              {/* LOKASI */}
-              {item.lokasi && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <FiMapPin className="text-red-500" />
-                  <span>{item.lokasi}</span>
-                </div>
-              )}
-
               {/* ACTION BUTTONS */}
               <div className="space-y-2 pt-2">
 
-                {/* DETAIL BUTTON */}
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full rounded-lg"
-                >
+                {/* DETAIL */}
+                <Button asChild variant="outline" className="w-full rounded-lg">
                   <Link href={`/acara/${item.id}`}>Lihat Detail</Link>
                 </Button>
 

@@ -1,36 +1,49 @@
-export type Peserta = {
+export interface Acara {
   id: string;
-  nama_peserta: string;
-  logo?: string | null;
-};
+  nama: string;
+  deskripsi?: string | null;
+  tipe_acara: "sistem_gugur" | "sistem_kompetisi" | "sistem_campuran";
+  dibuat_oleh?: string | null;
+  dibuat_pada?: string;
+}
 
-export type Acara = {
+export interface AnggotaTim {
   id: string;
-  nama_acara: string;
-};
+  tim_id: string;
+  nama_pemain: string;
+  nim?: string | null;
+  dibuat_pada?: string;
+}
 
-export type PertandinganStatus = "dijadwalkan" | "berlangsung" | "selesai";
+export interface Tim {
+  id: string;
+  nama: string;
+  jurusan?: string | null;
+  angkatan?: string | null;
+  nomor_hp?: string | null;
+  jumlah_pemain?: number;
+  dibuat_pada?: string;
+  anggota?: AnggotaTim[];
+}
 
 export interface Pertandingan {
   id: string;
   acara_id: string;
 
-  peserta_tuan_rumah_id: string | null;
-  peserta_tamu_id: string | null;
+  tim_a_id: string | null;
+  tim_b_id: string | null;
 
-  tanggal_pertandingan: string | null;
-  status: PertandinganStatus;
+  status: "dijadwalkan" | "berlangsung" | "selesai";
 
-  skor_tuan_rumah: number;
-  skor_tamu: number;
+  skor_tim_a: number | null;
+  skor_tim_b: number | null;
 
-  durasi_menit: number;
-  menit_saat_ini: number;
+  tanggal_pertandingan: string | null; // <-- ADD THIS
+  waktu_pertandingan: string | null;   // <-- ADD THIS
 
+  durasi_pertandingan: number | null;
   lokasi_lapangan: string | null;
-  dibuat_pada: string;
+  url_lokasi_maps: string | null;
 
-  acara?: Acara | null;
-  peserta_tuan_rumah?: Peserta | null;
-  peserta_tamu?: Peserta | null;
+  dibuat_pada: string;
 }
