@@ -91,7 +91,7 @@ useEffect(() => {
               </TableCell>
               <TableCell>{m.status}</TableCell>
               <TableCell>
-                <Link href={`/admin/pertandingan/edit/${m.id}`}>
+                <Link href={`/pertandingan/edit/${m.id}`}>
                   <Button size="sm" variant="outline">
                     Edit
                   </Button>

@@ -58,7 +58,7 @@ export default function PertandinganPage() {
               <span className="text-sm text-muted-foreground">
                 Total pertandingan: {acara.total_pertandingan}
               </span>
-              <Link href={`/admin/pertandingan/${acara.id}`}>
+              <Link href={`/pertandingan/detail/${acara.id}`}>
                 <Button variant="outline">Lihat Detail</Button>
               </Link>
             </CardContent>
