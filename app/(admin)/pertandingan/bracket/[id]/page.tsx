@@ -140,7 +140,7 @@ function MatchCard({ match }: { match: Pertandingan }) {
         <div className="space-y-3">
           {/* Team A */}
           <div className={`flex justify-between items-center p-2 rounded ${
-            isTeamAWinner ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200" :
+            isTeamAWinner ? "bg-gradient from-green-50 to-emerald-50 border border-green-200" :
             "bg-gray-50"
           }`}>
             <div className="flex items-center gap-2">
