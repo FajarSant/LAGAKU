@@ -66,7 +66,7 @@ export default function BracketListPage() {
                 <div className="text-sm text-gray-500">
                   Dibuat: {new Date(item.dibuat_pada).toLocaleDateString("id-ID")}
                 </div>
-                <Link href={`/admin/bracket/${item.id}`}>
+                <Link href={`/pertandingan/bracket/${item.id}`}>
                   <Button size="sm">Lihat Bracket</Button>
                 </Link>
               </div>
