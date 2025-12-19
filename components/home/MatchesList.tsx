@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, Trophy, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Card } from "../ui/card";
 
 interface Match {
   id: string;
@@ -252,7 +253,7 @@ export default function MatchesList({ selectedStatus, page, setPage }: MatchesLi
               const winnerInfo = getWinnerInfo(match);
               
               return (
-                <div key={match.id} className="group relative overflow-hidden bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02]">
+                <Card key={match.id} className="group relative overflow-hidden bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02]">
                   {/* Status Badge */}
                   <div className={`absolute top-4 right-4 px-3 py-1 rounded-full ${statusConfig.bg} border ${statusConfig.border}`}>
                     <span className={`text-sm font-medium ${statusConfig.color}`}>
@@ -404,7 +405,7 @@ export default function MatchesList({ selectedStatus, page, setPage }: MatchesLi
                       )}
                     </div>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>

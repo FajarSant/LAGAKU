@@ -3,6 +3,7 @@
 import { Flame, CalendarCheck, Trophy, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "../ui/button";
 
 interface StatusFilterProps {
   selectedStatus: string;
@@ -44,12 +45,15 @@ const statusOptions = [
   },
 ];
 
-export default function StatusFilter({ selectedStatus, setSelectedStatus }: StatusFilterProps) {
+export default function StatusFilter({
+  selectedStatus,
+  setSelectedStatus,
+}: StatusFilterProps) {
   const [counts, setCounts] = useState({
     berlangsung: 0,
     dijadwalkan: 0,
     selesai: 0,
-    semua: 0
+    semua: 0,
   });
 
   useEffect(() => {
@@ -59,62 +63,92 @@ export default function StatusFilter({ selectedStatus, setSelectedStatus }: Stat
   const fetchCounts = async () => {
     try {
       const supabase = createClient();
-      
+
       // Fetch counts untuk setiap status
       const [berlangsung, dijadwalkan, selesai, semua] = await Promise.all([
-        supabase.from('pertandingan').select('id', { count: 'exact' }).eq('status', 'berlangsung'),
-        supabase.from('pertandingan').select('id', { count: 'exact' }).eq('status', 'dijadwalkan'),
-        supabase.from('pertandingan').select('id', { count: 'exact' }).eq('status', 'selesai'),
-        supabase.from('pertandingan').select('id', { count: 'exact' })
+        supabase
+          .from("pertandingan")
+          .select("id", { count: "exact" })
+          .eq("status", "berlangsung"),
+        supabase
+          .from("pertandingan")
+          .select("id", { count: "exact" })
+          .eq("status", "dijadwalkan"),
+        supabase
+          .from("pertandingan")
+          .select("id", { count: "exact" })
+          .eq("status", "selesai"),
+        supabase.from("pertandingan").select("id", { count: "exact" }),
       ]);
 
       setCounts({
         berlangsung: berlangsung.count || 0,
         dijadwalkan: dijadwalkan.count || 0,
         selesai: selesai.count || 0,
-        semua: semua.count || 0
+        semua: semua.count || 0,
       });
     } catch (error) {
-      console.error('Error fetching counts:', error);
+      console.error("Error fetching counts:", error);
     }
   };
 
   return (
-    <div className="flex flex-wrap gap-3 p-6 bg-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700">
+    <div
+      className=" grid gap-4
+        grid-cols-2
+        sm:grid-cols-3
+        lg:grid-cols-4
+        p-6 rounded-2xl
+        bg-gray-800/30 backdrop-blur-sm
+        border border-gray-700"
+    >
       {statusOptions.map((option) => {
         const Icon = option.icon;
         const isActive = selectedStatus === option.value;
-        
+
         return (
           <button
             key={option.value}
             onClick={() => setSelectedStatus(option.value)}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 ${
-              isActive
-                ? `${option.bgColor} border ${option.borderColor} shadow-lg`
-                : "bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700"
-            }`}
+            className={`flex items-center justify-between gap-3 px-5 py-3 rounded-xl border transition-all duration-300
+    ${
+      isActive
+        ? `${option.bgColor} ${option.borderColor} shadow-lg`
+        : "bg-gray-800/50 border-gray-700 hover:bg-gray-700/50"
+    }`}
           >
-            <div className={`p-2 rounded-lg ${isActive ? 'bg-white/10' : 'bg-gray-700'}`}>
-              <Icon className={`w-5 h-5 ${
-                isActive 
-                  ? `text-${option.color.split('-')[1]}-400` 
-                  : 'text-gray-400'
-              }`} />
-            </div>
-            <span className={`font-medium ${
-              isActive 
-                ? `bg-gradient-to-r ${option.color} bg-clip-text text-transparent` 
-                : 'text-gray-300'
-            }`}>
-              {option.label}
-            </span>
-            {counts[option.value as keyof typeof counts] > 0 && (
-              <div className="ml-2 px-2 py-1 text-xs rounded-full bg-white/10">
-                <span className="text-white font-medium">
-                  {counts[option.value as keyof typeof counts]}
-                </span>
+            {/* LEFT */}
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`p-2 rounded-lg shrink-0 ${
+                  isActive ? "bg-white/10" : "bg-gray-700"
+                }`}
+              >
+                <Icon
+                  className={`h-5 w-5 ${
+                    isActive
+                      ? `text-${option.color.split("-")[1]}-400`
+                      : "text-gray-400"
+                  }`}
+                />
               </div>
+
+              <span
+                className={`font-medium truncate ${
+                  isActive
+                    ? `bg-gradient-to-r ${option.color} bg-clip-text text-transparent`
+                    : "text-gray-300"
+                }`}
+              >
+                {option.label}
+              </span>
+            </div>
+
+            {/* RIGHT */}
+            {counts[option.value as keyof typeof counts] > 0 && (
+              <span className="ml-2 shrink-0 px-2 py-1 text-xs rounded-full bg-white/10 text-white font-medium">
+                {counts[option.value as keyof typeof counts]}
+              </span>
             )}
           </button>
         );

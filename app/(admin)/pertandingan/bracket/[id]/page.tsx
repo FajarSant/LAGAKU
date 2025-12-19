@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy, ArrowLeft, RefreshCw, ChevronRight, Crown } from "lucide-react";
+import {
+  Trophy,
+  ArrowLeft,
+  RefreshCw,
+  ChevronRight,
+  Crown,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -53,30 +59,24 @@ interface BracketRound {
 }
 
 // ==================== BracketHeader Component ====================
-function BracketHeader({ acara, onBack, onRefresh }: { 
-  acara: Acara; 
-  onBack: () => void; 
-  onRefresh: () => void; 
+function BracketHeader({
+  acara,
+  onBack,
+  onRefresh,
+}: {
+  acara: Acara;
+  onBack: () => void;
+  onRefresh: () => void;
 }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          size="sm"
-          className="h-8 px-2"
-        >
+        <Button variant="ghost" onClick={onBack} size="sm" className="h-8 px-2">
           <ArrowLeft className="h-4 w-4 mr-1" />
           <span>Kembali</span>
         </Button>
-        
-        <Button
-          variant="outline"
-          onClick={onRefresh}
-          size="sm"
-          className="h-8"
-        >
+
+        <Button variant="outline" onClick={onRefresh} size="sm" className="h-8">
           <RefreshCw className="h-4 w-4 mr-1" />
           <span>Refresh</span>
         </Button>
@@ -87,10 +87,8 @@ function BracketHeader({ acara, onBack, onRefresh }: {
           <Trophy className="h-5 w-5 text-amber-500" />
           <h1 className="text-2xl font-bold">{acara.nama}</h1>
         </div>
-        
-        {acara.deskripsi && (
-          <p className="text-gray-600">{acara.deskripsi}</p>
-        )}
+
+        {acara.deskripsi && <p className="text-gray-600">{acara.deskripsi}</p>}
       </div>
     </div>
   );
@@ -111,22 +109,26 @@ function MatchCard({ match }: { match: Pertandingan }) {
     }
   };
 
-  const isTeamAWinner = match.status === "selesai" && 
-                       match.skor_tim_a !== null && 
-                       match.skor_tim_b !== null && 
-                       match.skor_tim_a > match.skor_tim_b;
+  const isTeamAWinner =
+    match.status === "selesai" &&
+    match.skor_tim_a !== null &&
+    match.skor_tim_b !== null &&
+    match.skor_tim_a > match.skor_tim_b;
 
-  const isTeamBWinner = match.status === "selesai" && 
-                       match.skor_tim_a !== null && 
-                       match.skor_tim_b !== null && 
-                       match.skor_tim_b > match.skor_tim_a;
+  const isTeamBWinner =
+    match.status === "selesai" &&
+    match.skor_tim_a !== null &&
+    match.skor_tim_b !== null &&
+    match.skor_tim_b > match.skor_tim_a;
 
   const isByeMatch = match.is_bye;
 
   return (
-    <Card className={`overflow-hidden hover:shadow-md transition-shadow ${
-      match.status === "selesai" ? "border-green-200" : ""
-    } ${isByeMatch ? "border-dashed" : ""}`}>
+    <Card
+      className={`overflow-hidden hover:shadow-md transition-shadow ${
+        match.status === "selesai" ? "border-green-200" : ""
+      } ${isByeMatch ? "border-dashed" : ""}`}
+    >
       <CardContent className="p-4">
         {/* Status */}
         <div className="mb-3 flex items-center justify-between">
@@ -139,21 +141,24 @@ function MatchCard({ match }: { match: Pertandingan }) {
         {/* Teams */}
         <div className="space-y-3">
           {/* Team A */}
-          <div className={`flex justify-between items-center p-2 rounded ${
-            isTeamAWinner ? "bg-gradient from-green-50 to-emerald-50 border border-green-200" :
-            "bg-gray-50"
-          }`}>
+          <div
+            className={`flex justify-between items-center p-2 rounded ${
+              isTeamAWinner
+                ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200"
+                : "bg-gray-50"
+            }`}
+          >
             <div className="flex items-center gap-2">
-              <span className="font-medium">
-                {match.tim_a?.nama || "TBD"}
-              </span>
+              <span className="font-medium">{match.tim_a?.nama || "TBD"}</span>
               {isByeMatch && match.status === "selesai" && (
                 <Crown className="h-3 w-3 text-amber-500" />
               )}
             </div>
-            <span className={`font-bold text-lg ${
-              isTeamAWinner ? "text-green-700" : ""
-            }`}>
+            <span
+              className={`font-bold text-lg ${
+                isTeamAWinner ? "text-green-700" : ""
+              }`}
+            >
               {match.skor_tim_a ?? "-"}
             </span>
           </div>
@@ -163,18 +168,23 @@ function MatchCard({ match }: { match: Pertandingan }) {
 
           {/* Team B - hanya muncul jika bukan BYE */}
           {!isByeMatch ? (
-            <div className={`flex justify-between items-center p-2 rounded ${
-              isTeamBWinner ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200" :
-              "bg-gray-50"
-            }`}>
+            <div
+              className={`flex justify-between items-center p-2 rounded ${
+                isTeamBWinner
+                  ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200"
+                  : "bg-gray-50"
+              }`}
+            >
               <div className="flex items-center gap-2">
                 <span className="font-medium">
                   {match.tim_b?.nama || "TBD"}
                 </span>
               </div>
-              <span className={`font-bold text-lg ${
-                isTeamBWinner ? "text-green-700" : ""
-              }`}>
+              <span
+                className={`font-bold text-lg ${
+                  isTeamBWinner ? "text-green-700" : ""
+                }`}
+              >
                 {match.skor_tim_b ?? "-"}
               </span>
             </div>
@@ -186,7 +196,8 @@ function MatchCard({ match }: { match: Pertandingan }) {
         </div>
 
         {/* Winner announcement */}
-        {match.status === "selesai" && !isByeMatch &&
+        {match.status === "selesai" &&
+          !isByeMatch &&
           match.skor_tim_a !== null &&
           match.skor_tim_b !== null && (
             <div className="mt-3 pt-3 border-t border-green-200">
@@ -211,7 +222,7 @@ function MatchCard({ match }: { match: Pertandingan }) {
               ) : null}
             </div>
           )}
-          
+
         {/* Bye match info */}
         {isByeMatch && match.status === "selesai" && match.tim_a && (
           <div className="mt-3 pt-3 border-t border-amber-200">
@@ -231,21 +242,25 @@ function MatchCard({ match }: { match: Pertandingan }) {
 }
 
 // ==================== BracketRound Component ====================
-function BracketRound({ 
-  round, 
-  matches, 
+function BracketRound({
+  round,
+  matches,
   isPlaceholder = false,
   isFinalRound = false,
-  hasNextRound = false
-}: { 
-  round: Round; 
-  matches: Pertandingan[]; 
+  hasNextRound = false,
+}: {
+  round: Round;
+  matches: Pertandingan[];
   isPlaceholder?: boolean;
   isFinalRound?: boolean;
   hasNextRound?: boolean;
 }) {
   // Format nama round
-  const getRoundDisplayName = (nama: string, urutan: number, matchCount: number) => {
+  const getRoundDisplayName = (
+    nama: string,
+    urutan: number,
+    matchCount: number
+  ) => {
     if (matchCount === 1) return "Final";
     if (matchCount === 2) return "Semifinal";
     if (matchCount === 4) return "Quarterfinal";
@@ -253,14 +268,20 @@ function BracketRound({
     return `Round ${urutan}`;
   };
 
-  const displayName = getRoundDisplayName(round.nama, round.urutan, matches.length);
-  const byeMatches = matches.filter(m => m.is_bye);
-  const normalMatches = matches.filter(m => !m.is_bye);
+  const displayName = getRoundDisplayName(
+    round.nama,
+    round.urutan,
+    matches.length
+  );
+  const byeMatches = matches.filter((m) => m.is_bye);
+  const normalMatches = matches.filter((m) => !m.is_bye);
 
   return (
-    <div className={`min-w-[320px] flex-shrink-0 relative ${
-      isPlaceholder ? "opacity-75" : ""
-    }`}>
+    <div
+      className={`min-w-[320px] flex-shrink-0 relative ${
+        isPlaceholder ? "opacity-75" : ""
+      }`}
+    >
       {/* Round Header */}
       <div className="mb-4 pb-3 border-b sticky top-0 bg-white z-20">
         <div className="flex items-center justify-between mb-1">
@@ -284,9 +305,7 @@ function BracketRound({
         <div className="flex items-center gap-3 text-sm text-gray-500">
           <span>{normalMatches.length} match</span>
           {byeMatches.length > 0 && (
-            <span className="text-amber-600">
-              {byeMatches.length} bye
-            </span>
+            <span className="text-amber-600">{byeMatches.length} bye</span>
           )}
         </div>
       </div>
@@ -296,7 +315,7 @@ function BracketRound({
         {normalMatches.map((match, index) => (
           <div key={match.id} className="relative">
             <MatchCard match={match} />
-            
+
             {/* Arrow untuk next round */}
             {hasNextRound && index < normalMatches.length - 1 && (
               <div className="absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
@@ -305,18 +324,23 @@ function BracketRound({
             )}
           </div>
         ))}
-        
+
         {/* Bye matches section */}
         {byeMatches.length > 0 && (
           <div className="pt-4 border-t">
             <div className="text-xs text-gray-500 mb-2">Tim dengan BYE:</div>
             <div className="space-y-2">
               {byeMatches.map((match) => (
-                <div key={match.id} className="bg-amber-50 border border-amber-200 rounded p-2">
+                <div
+                  key={match.id}
+                  className="bg-amber-50 border border-amber-200 rounded p-2"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Crown className="h-3 w-3 text-amber-500" />
-                      <span className="text-sm font-medium">{match.tim_a?.nama}</span>
+                      <span className="text-sm font-medium">
+                        {match.tim_a?.nama}
+                      </span>
                     </div>
                     <Badge variant="outline" className="text-xs">
                       BYE
@@ -342,14 +366,17 @@ function BracketRound({
 }
 
 // ==================== BracketStats Component ====================
-function BracketStats({ rounds, totalMatches, completedMatches }: { 
-  rounds: number; 
+function BracketStats({
+  rounds,
+  totalMatches,
+  completedMatches,
+}: {
+  rounds: number;
   totalMatches: number;
   completedMatches: number;
 }) {
-  const completionPercentage = totalMatches > 0 
-    ? Math.round((completedMatches / totalMatches) * 100)
-    : 0;
+  const completionPercentage =
+    totalMatches > 0 ? Math.round((completedMatches / totalMatches) * 100) : 0;
 
   return (
     <div className="border-t pt-6 space-y-4">
@@ -367,7 +394,9 @@ function BracketStats({ rounds, totalMatches, completedMatches }: {
           <div className="text-sm text-gray-600">Selesai</div>
         </div>
         <div className="bg-blue-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">{completionPercentage}%</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {completionPercentage}%
+          </div>
           <div className="text-sm text-blue-600">Progress</div>
         </div>
       </div>
@@ -379,7 +408,7 @@ function BracketStats({ rounds, totalMatches, completedMatches }: {
           <span className="font-medium">{completionPercentage}%</span>
         </div>
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
             style={{ width: `${completionPercentage}%` }}
           />
@@ -448,7 +477,7 @@ export default function SimpleBracketPage() {
 
       // 4. Fetch data tim untuk semua pertandingan
       const timIds = new Set<string>();
-      matchesData?.forEach(match => {
+      matchesData?.forEach((match) => {
         if (match.tim_a_id) timIds.add(match.tim_a_id);
         if (match.tim_b_id) timIds.add(match.tim_b_id);
       });
@@ -467,19 +496,24 @@ export default function SimpleBracketPage() {
       const roundsWithMatches: BracketRound[] = [];
 
       for (const round of roundsData) {
-        const roundMatches = matchesData?.filter(m => m.round_id === round.id) || [];
-        
+        const roundMatches =
+          matchesData?.filter((m) => m.round_id === round.id) || [];
+
         // Enrich matches with team data
-        const enrichedMatches = roundMatches.map(match => ({
+        const enrichedMatches = roundMatches.map((match) => ({
           ...match,
-          tim_a: match.tim_a_id ? timData?.find(t => t.id === match.tim_a_id) : undefined,
-          tim_b: match.tim_b_id ? timData?.find(t => t.id === match.tim_b_id) : undefined,
-          round: round
+          tim_a: match.tim_a_id
+            ? timData?.find((t) => t.id === match.tim_a_id)
+            : undefined,
+          tim_b: match.tim_b_id
+            ? timData?.find((t) => t.id === match.tim_b_id)
+            : undefined,
+          round: round,
         }));
 
         roundsWithMatches.push({
           round,
-          matches: enrichedMatches
+          matches: enrichedMatches,
         });
       }
 
@@ -487,40 +521,44 @@ export default function SimpleBracketPage() {
       if (roundsWithMatches.length > 0) {
         const lastRound = roundsWithMatches[roundsWithMatches.length - 1];
         const lastRoundMatches = lastRound.matches;
-        
+
         // Cek apakah semua match di round terakhir sudah selesai
-        const allMatchesCompleted = lastRoundMatches.every(m => 
-          m.status === "selesai" || m.is_bye
+        const allMatchesCompleted = lastRoundMatches.every(
+          (m) => m.status === "selesai" || m.is_bye
         );
-        
+
         // Hitung pemenang dari round terakhir
         const winnersFromLastRound = lastRoundMatches
-          .filter(m => m.pemenang_id || m.is_bye)
-          .map(m => m.is_bye ? m.tim_a_id : m.pemenang_id)
+          .filter((m) => m.pemenang_id || m.is_bye)
+          .map((m) => (m.is_bye ? m.tim_a_id : m.pemenang_id))
           .filter(Boolean) as string[];
-        
+
         // Jika ada pemenang dan belum ada round berikutnya
         if (allMatchesCompleted && winnersFromLastRound.length > 1) {
           const nextRoundUrutan = lastRound.round.urutan + 1;
-          
+
           // Buat placeholder round
           const placeholderRound: Round = {
             id: `placeholder-${nextRoundUrutan}`,
-            nama: winnersFromLastRound.length === 1 ? "Final" : 
-                  winnersFromLastRound.length === 2 ? "Semifinal" : 
-                  winnersFromLastRound.length === 4 ? "Quarterfinal" : 
-                  `Round ${nextRoundUrutan}`,
+            nama:
+              winnersFromLastRound.length === 1
+                ? "Final"
+                : winnersFromLastRound.length === 2
+                ? "Semifinal"
+                : winnersFromLastRound.length === 4
+                ? "Quarterfinal"
+                : `Round ${nextRoundUrutan}`,
             urutan: nextRoundUrutan,
             acara_id: acaraId,
-            dibuat_pada: new Date().toISOString()
+            dibuat_pada: new Date().toISOString(),
           };
-          
+
           // Buat placeholder matches
           const placeholderMatches: Pertandingan[] = [];
           for (let i = 0; i < Math.ceil(winnersFromLastRound.length / 2); i++) {
             const timAId = winnersFromLastRound[i * 2];
             const timBId = winnersFromLastRound[i * 2 + 1];
-            
+
             placeholderMatches.push({
               id: `placeholder-match-${nextRoundUrutan}-${i}`,
               acara_id: acaraId,
@@ -534,22 +572,21 @@ export default function SimpleBracketPage() {
               is_bye: false,
               tanggal_pertandingan: null,
               waktu_pertandingan: null,
-              tim_a: timAId ? timData?.find(t => t.id === timAId) : undefined,
-              tim_b: timBId ? timData?.find(t => t.id === timBId) : undefined,
-              round: placeholderRound
+              tim_a: timAId ? timData?.find((t) => t.id === timAId) : undefined,
+              tim_b: timBId ? timData?.find((t) => t.id === timBId) : undefined,
+              round: placeholderRound,
             });
           }
-          
+
           roundsWithMatches.push({
             round: placeholderRound,
             matches: placeholderMatches,
-            isPlaceholder: true
+            isPlaceholder: true,
           });
         }
       }
 
       setBracketRounds(roundsWithMatches);
-
     } catch (error) {
       console.error("Error fetching bracket data:", error);
     } finally {
@@ -564,12 +601,15 @@ export default function SimpleBracketPage() {
   }, [acaraId]);
 
   // Hitung statistik
-  const totalMatches = bracketRounds.reduce((sum, round) => 
-    sum + round.matches.length, 0
+  const totalMatches = bracketRounds.reduce(
+    (sum, round) => sum + round.matches.length,
+    0
   );
-  
-  const completedMatches = bracketRounds.reduce((sum, round) => 
-    sum + round.matches.filter(m => m.status === "selesai").length, 0
+
+  const completedMatches = bracketRounds.reduce(
+    (sum, round) =>
+      sum + round.matches.filter((m) => m.status === "selesai").length,
+    0
   );
 
   if (loading) {
@@ -609,8 +649,10 @@ export default function SimpleBracketPage() {
             <p className="text-sm text-gray-500 mt-1">
               Generate pertandingan terlebih dahulu
             </p>
-            <Button 
-              onClick={() => router.push(`/admin/pertandingan/tambah?acara=${acaraId}`)}
+            <Button
+              onClick={() =>
+                router.push(`/admin/pertandingan/tambah?acara=${acaraId}`)
+              }
               className="mt-4"
             >
               Generate Bracket
@@ -621,10 +663,11 @@ export default function SimpleBracketPage() {
         <>
           <div className="flex overflow-x-auto gap-6 pb-4">
             {bracketRounds.map((bracketRound, index) => {
-              const isFinalRound = bracketRound.matches.length === 1 && 
-                                  bracketRound.matches.every(m => !m.is_bye);
+              const isFinalRound =
+                bracketRound.matches.length === 1 &&
+                bracketRound.matches.every((m) => !m.is_bye);
               const hasNextRound = index < bracketRounds.length - 1;
-              
+
               return (
                 <BracketRound
                   key={bracketRound.round.id}
@@ -643,7 +686,7 @@ export default function SimpleBracketPage() {
             totalMatches={totalMatches}
             completedMatches={completedMatches}
           />
-          
+
           {/* Info Legend */}
           <Card>
             <CardContent className="p-4">
