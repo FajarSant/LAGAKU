@@ -2,15 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-
-import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
-import Swal from "sweetalert2";
+import { toast } from "sonner";
+import AcaraHeader from "@/components/admin/acara/AcaraHeader";
+import SearchFilter from "@/components/admin/acara/SearchFilter";
+import AcaraSkeleton from "@/components/admin/acara/AcaraSkeleton";
+import AcaraGrid from "@/components/admin/acara/AcaraGird";
+import EmptyState from "@/components/admin/acara/EmptyState";
 
 interface Acara {
   id: string;
@@ -18,26 +15,38 @@ interface Acara {
   deskripsi: string | null;
   tipe_acara: "SISTEM_GUGUR" | "SISTEM_KOMPETISI" | "SISTEM_CAMPURAN";
   dibuat_pada: string;
+  lokasi?: string;
+  tanggal_mulai?: string;
+  tanggal_selesai?: string;
+  status?: string;
 }
 
 export default function AcaraPage() {
   const supabase = createClient();
+
   const [acara, setAcara] = useState<Acara[]>([]);
   const [filtered, setFiltered] = useState<Acara[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
 
   const fetchAcara = async () => {
-    const { data, error } = await supabase
-      .from("acara")
-      .select("*")
-      .order("dibuat_pada", { ascending: false });
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("acara")
+        .select("*")
+        .order("dibuat_pada", { ascending: false });
 
-    if (!error && data) {
-      setAcara(data);
-      setFiltered(data);
+      if (error) throw error;
+
+      setAcara(data || []);
+      applyFilters(data || [], search, selectedFilter);
+    } catch (error) {
+      toast.error("Gagal memuat data acara");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -45,131 +54,78 @@ export default function AcaraPage() {
   }, []);
 
   useEffect(() => {
-    const s = search.toLowerCase();
-    setFiltered(acara.filter((item) => item.nama.toLowerCase().includes(s)));
-  }, [search, acara]);
+    applyFilters(acara, search, selectedFilter);
+  }, [search, selectedFilter, acara]);
 
-  const handleDelete = async (id: string, nama: string) => {
-    const result = await Swal.fire({
-      title: `Hapus Acara?`,
-      text: `Acara "${nama}" akan dihapus secara permanen.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#6c757d",
-      confirmButtonText: "Ya, hapus",
-      cancelButtonText: "Batal",
-    });
+  const applyFilters = (data: Acara[], searchTerm: string, filter: string) => {
+    let filteredData = data;
 
-    if (result.isConfirmed) {
-      const { error } = await supabase.from("acara").delete().eq("id", id);
-
-      if (!error) {
-        Swal.fire("Terhapus!", "Acara berhasil dihapus.", "success");
-        fetchAcara();
-      } else {
-        Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
-      }
+    // Search filter
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      filteredData = filteredData.filter(
+        (item) =>
+          item.nama.toLowerCase().includes(s) ||
+          (item.deskripsi && item.deskripsi.toLowerCase().includes(s))
+      );
     }
+
+    // Type filter
+    if (filter !== "all") {
+      filteredData = filteredData.filter((item) => item.tipe_acara === filter);
+    }
+
+    setFiltered(filteredData);
   };
 
-  // Mapping ENUM → Label yang lebih bagus
-  const jenisAcaraLabel: Record<string, string> = {
-    sistem_gugur: "Sistem Gugur",
-    sistem_kompetisi: "Sistem Kompetisi",
-    sistem_campuran: "Sistem Campuran",
+  const handleRefresh = () => {
+    fetchAcara();
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Daftar Acara</h1>
+      <div className="container mx-auto p-4 md:p-6 space-y-8">
+        <AcaraHeader
+          acaraCount={acara.length}
+          filteredCount={filtered.length}
+          onRefresh={handleRefresh}
+        />
 
-        <Button asChild className="gap-2">
-          <Link href="/acara/tambah">
-            <FiPlus />
-            Tambah Acara
-          </Link>
-        </Button>
-      </div>
+        <SearchFilter
+          search={search}
+          onSearchChange={setSearch}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+          onRefresh={handleRefresh}
+          acaraCount={acara.length}
+          filteredCount={filtered.length}
+        />
 
-      {/* Search */}
-      <Input
-        placeholder="Cari acara..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-sm"
-      />
+        {loading ? (
+          <AcaraSkeleton />
+        ) : (
+          <>
+            {filtered.length > 0 ? (
+              <AcaraGrid acara={filtered} />
+            ) : (
+              <EmptyState
+                hasSearch={!!search}
+                hasFilter={selectedFilter !== "all"}
+                onAddNew={() => (window.location.href = "/acara/tambah")}
+              />
+            )}
+          </>
+        )}
 
-      {/* Loading */}
-      {loading && <p className="text-muted-foreground">Memuat data...</p>}
-
-      {/* List Card */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map((item) => (
-          <Card
-            key={item.id}
-            className="hover:shadow-lg transition-all border border-neutral-200"
-          >
-            <CardHeader>
-              <CardTitle className="flex justify-between items-start">
-                <span className="font-semibold text-lg">{item.nama}</span>
-
-                <Badge variant="secondary" className="capitalize text-xs px-2 py-1">
-                  {jenisAcaraLabel[item.tipe_acara]}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              {/* DESKRIPSI */}
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {item.deskripsi || "Tidak ada deskripsi"}
+        {/* Footer Info */}
+        {!loading && filtered.length > 0 && (
+          <div className="mt-8 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                Menampilkan {filtered.length} dari {acara.length} acara
               </p>
-
-              {/* ACTION BUTTONS */}
-              <div className="space-y-2 pt-2">
-
-                {/* DETAIL */}
-                <Button asChild variant="outline" className="w-full rounded-lg">
-                  <Link href={`/acara/${item.id}`}>Lihat Detail</Link>
-                </Button>
-
-                {/* EDIT + DELETE */}
-                <div className="flex items-center justify-between gap-2">
-                  <Button
-                    asChild
-                    variant="secondary"
-                    className="flex-1 rounded-lg gap-2"
-                  >
-                    <Link href={`/acara/edit/${item.id}`}>
-                      <FiEdit size={18} />
-                      Edit
-                    </Link>
-                  </Button>
-
-                  <Button
-                    variant="destructive"
-                    className="flex-1 rounded-lg gap-2"
-                    onClick={() => handleDelete(item.id, item.nama)}
-                  >
-                    <FiTrash size={18} />
-                    Hapus
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* EMPTY STATE */}
-      {!loading && filtered.length === 0 && (
-        <p className="text-center text-muted-foreground mt-10">
-          Tidak ada acara ditemukan.
-        </p>
-      )}
-    </div>
   );
 }
