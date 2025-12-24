@@ -1,129 +1,159 @@
+// components/MatchCard.tsx
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Crown } from "lucide-react";
-import { Match } from "@/types/type";
+import { Award, Crown } from "lucide-react";
+import { formatMatchDate, getMatchStatusConfig, Pertandingan } from "@/utils";
 
 interface MatchCardProps {
-  match: Match & { isWinnerFromPrevRound?: boolean };
+  match: Pertandingan;
 }
 
-export default function MatchCard({ match }: MatchCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "selesai":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "berlangsung":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
+export function MatchCard({ match }: MatchCardProps) {
+  const config = getMatchStatusConfig(match.status);
+  const isTeamAWinner = match.status === "selesai" && match.pemenang_id === match.tim_a_id;
+  const isTeamBWinner = match.status === "selesai" && match.pemenang_id === match.tim_b_id;
+  const isByeMatch = match.is_bye;
+
+  const getStatusText = () => {
+    if (match.status === "selesai") return "SELESAI";
+    if (match.status === "berlangsung") return "BERLANGSUNG";
+    return "DIJADWALKAN";
   };
 
-  const isTeamAWinner = match.status === "selesai" && 
-                       match.skor_tim_a !== null && 
-                       match.skor_tim_b !== null && 
-                       match.skor_tim_a > match.skor_tim_b;
-
-  const isTeamBWinner = match.status === "selesai" && 
-                       match.skor_tim_a !== null && 
-                       match.skor_tim_b !== null && 
-                       match.skor_tim_b > match.skor_tim_a;
-
-  const isTeamAFromPrevWinner = match.isWinnerFromPrevRound && match.tim_a;
-  const isTeamBFromPrevWinner = match.isWinnerFromPrevRound && match.tim_b;
-
   return (
-    <Card className={`overflow-hidden hover:shadow-md transition-shadow ${
-      match.status === "selesai" ? "border-green-200" : ""
-    }`}>
+    <Card className={`overflow-hidden border hover:shadow-lg transition-all duration-200 ${config.border} ${isByeMatch ? "border-dashed" : ""}`}>
       <CardContent className="p-4">
-        {/* Status dengan pemenang indicator */}
-        <div className="mb-3 flex items-center justify-between">
-          <Badge className={`text-xs ${getStatusColor(match.status)} border`}>
-            {match.status}
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <Badge 
+            variant="outline" 
+            className={`${config.text} ${config.border} font-medium`}
+          >
+            {getStatusText()}
+            {isByeMatch && " • BYE"}
           </Badge>
           
-          {(isTeamAFromPrevWinner || isTeamBFromPrevWinner) && (
-            <Badge variant="outline" className="text-xs flex items-center gap-1">
-              <Crown className="h-3 w-3 text-amber-500" />
-              Pemenang round sebelumnya
-            </Badge>
+          {match.tanggal_pertandingan && (
+            <div className="text-xs text-muted-foreground">
+              {formatMatchDate(match.tanggal_pertandingan)}
+            </div>
           )}
         </div>
 
-        {/* Teams */}
-        <div className="space-y-3">
+        {/* Match Content */}
+        <div className="space-y-2">
           {/* Team A */}
-          <div className={`flex justify-between items-center p-2 rounded ${
-            isTeamAWinner ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200" :
-            isTeamAFromPrevWinner ? "bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200" :
-            "bg-gray-50"
+          <div className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+            isTeamAWinner 
+              ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-200 dark:border-green-800" 
+              : "bg-muted/50 hover:bg-muted"
           }`}>
-            <div className="flex items-center gap-2">
-              <span className="font-medium">
-                {match.tim_a?.nama || "BYE"}
-              </span>
-              {isTeamAFromPrevWinner && (
-                <Crown className="h-3 w-3 text-amber-500" />
-              )}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-background border">
+                <span className="text-xs font-bold">A</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`font-medium ${isTeamAWinner ? "text-green-700 dark:text-green-400" : ""}`}>
+                  {match.tim_a?.nama || "TBD"}
+                </span>
+                {isTeamAWinner && (
+                  <Award className="h-4 w-4 text-amber-500" />
+                )}
+              </div>
             </div>
-            <span className={`font-bold text-lg ${
-              isTeamAWinner ? "text-green-700" : ""
-            }`}>
-              {match.skor_tim_a ?? "-"}
-            </span>
-          </div>
-
-          {/* Team B */}
-          <div className={`flex justify-between items-center p-2 rounded ${
-            isTeamBWinner ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200" :
-            isTeamBFromPrevWinner ? "bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200" :
-            "bg-gray-50"
-          }`}>
             <div className="flex items-center gap-2">
-              <span className="font-medium">
-                {match.tim_b?.nama || "BYE"}
-              </span>
-              {isTeamBFromPrevWinner && (
-                <Crown className="h-3 w-3 text-amber-500" />
-              )}
-            </div>
-            <span className={`font-bold text-lg ${
-              isTeamBWinner ? "text-green-700" : ""
-            }`}>
-              {match.skor_tim_b ?? "-"}
-            </span>
-          </div>
-        </div>
-
-        {/* Winner announcement */}
-        {match.status === "selesai" &&
-          match.skor_tim_a !== null &&
-          match.skor_tim_b !== null && (
-            <div className="mt-3 pt-3 border-t border-green-200">
-              {isTeamAWinner ? (
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-green-600 font-medium">
-                    🏆 {match.tim_a?.nama} menang
-                  </p>
-                  <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800">
-                    Lolos ke round berikutnya
-                  </Badge>
-                </div>
-              ) : isTeamBWinner ? (
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-green-600 font-medium">
-                    🏆 {match.tim_b?.nama} menang
-                  </p>
-                  <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800">
-                    Lolos ke round berikutnya
-                  </Badge>
-                </div>
+              {match.status === "selesai" ? (
+                <span className={`text-lg font-bold ${isTeamAWinner ? "text-green-700 dark:text-green-400" : ""}`}>
+                  {match.skor_tim_a ?? 0}
+                </span>
               ) : (
-                <p className="text-sm text-gray-500">Hasil seri</p>
+                <span className="text-muted-foreground">-</span>
               )}
+            </div>
+          </div>
+
+          {/* VS Separator */}
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t"></div>
+            </div>
+            <div className="relative bg-background px-2">
+              <span className="text-xs font-medium text-muted-foreground">VS</span>
+            </div>
+          </div>
+
+          {/* Team B - only show if not BYE */}
+          {!isByeMatch ? (
+            <div className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+              isTeamBWinner 
+                ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-200 dark:border-green-800" 
+                : "bg-muted/50 hover:bg-muted"
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-background border">
+                  <span className="text-xs font-bold">B</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`font-medium ${isTeamBWinner ? "text-green-700 dark:text-green-400" : ""}`}>
+                    {match.tim_b?.nama || "TBD"}
+                  </span>
+                  {isTeamBWinner && (
+                    <Award className="h-4 w-4 text-amber-500" />
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {match.status === "selesai" ? (
+                  <span className={`text-lg font-bold ${isTeamBWinner ? "text-green-700 dark:text-green-400" : ""}`}>
+                    {match.skor_tim_b ?? 0}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">-</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 dark:bg-amber-900/30 rounded-full">
+                <Crown className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                  BYE - Tim langsung lolos
+                </span>
+              </div>
             </div>
           )}
+        </div>
+
+        {/* Winner Info */}
+        {match.status === "selesai" && (
+          <div className={`mt-3 pt-3 border-t ${config.border}`}>
+            {isTeamAWinner && match.tim_a ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Award className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                    {match.tim_a.nama} menang
+                  </span>
+                </div>
+                <Badge className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
+                  Lolos
+                </Badge>
+              </div>
+            ) : isTeamBWinner && match.tim_b ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Award className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                    {match.tim_b.nama} menang
+                  </span>
+                </div>
+                <Badge className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
+                  Lolos
+                </Badge>
+              </div>
+            ) : null}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
