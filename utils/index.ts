@@ -6,7 +6,14 @@ export type {
   Pertandingan,
   BracketRoundData,
   MatchStatusConfig,
-  StatsData
+  StatsData,
+  AcaraSimple,
+  TimSimple,
+  FormState,
+  Match,
+  BracketInfo,
+  AcaraWithCount,
+  PertandinganWithRelations
 } from '@/types/type';
 
 export {
@@ -16,4 +23,4 @@ export {
   formatMatchDate,
   calculateCompletionPercentage,
   isFinalRound
-} from './BracketUtils';
+} from './bracketUtils';

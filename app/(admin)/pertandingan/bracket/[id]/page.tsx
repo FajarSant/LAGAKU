@@ -10,7 +10,7 @@ import { AlertCircle as AlertCircleIcon } from "lucide-react";
 import { Acara, BracketRoundData, Round, StatsData } from "@/utils";
 import { LoadingBracket } from "@/components/admin/bracket/LoadingBracket";
 import { BracketHeader } from "@/components/admin/bracket/BracketHeader";
-import { EmptyBracket } from "@/components/admin/bracket/EmptyBracket";
+import { EmptyBracket } from "@/components/admin/bracket/EmpatyBracket";
 import { BracketRound } from "@/components/admin/bracket/BracketRound";
 import { BracketStats } from "@/components/admin/bracket/BracketStats";
 import { BracketLegend } from "@/components/admin/bracket/BracketLagend";
