@@ -648,7 +648,7 @@ export default function BracketPage() {
                 {/* Round Header dengan indikator round terbaru */}
                 <div className={`flex items-center justify-between p-4 rounded-lg ${
                   isLatestRound 
-                    ? "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-l-4 border-blue-500 dark:border-blue-400" 
+                    ? "bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-l-4 border-blue-500 dark:border-blue-400" 
                     : "bg-gray-50 dark:bg-gray-900/50"
                 }`}>
                   <div className="flex items-center gap-3">

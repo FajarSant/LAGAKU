@@ -83,22 +83,7 @@ export default function FeaturesSection() {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-16 text-center">
-          <div className="inline-block bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl border border-gray-700 p-8">
-            <h3 className="text-2xl font-bold mb-4">Siap untuk Kompetisi?</h3>
-            <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
-              Bergabung dengan ratusan tim dan ribuan pemain dalam turnamen seru. Daftar sekarang dan raih kemenangan!
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <button className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold transition-all transform hover:scale-105">
-                Daftar Turnamen
-              </button>
-              <button className="px-8 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg font-semibold transition">
-                Lihat Panduan
-              </button>
-            </div>
-          </div>
-        </div>
+       
       </div>
     </section>
   );

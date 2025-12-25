@@ -64,17 +64,17 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 text-white pb-20 md:pb-0">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-900 to-gray-950 text-white pb-20 md:pb-0">
       <Navigation />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20" />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-r from-blue-900/20 to-purple-900/20" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-blue-500 to-transparent" />
 
         <div className="container mx-auto px-4 py-12 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               Selamat Datang di Arena Kompetisi
             </h1>
             <p className="text-xl text-gray-300 mb-10">
@@ -139,6 +139,23 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          <div className="mt-16 text-center">
+            <div className="inline-block bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl border border-gray-700 p-8">
+              <h3 className="text-2xl font-bold mb-4">Siap untuk Kompetisi?</h3>
+              <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
+                Bergabung dengan ratusan tim dan ribuan pemain dalam turnamen
+                seru. Daftar sekarang dan raih kemenangan!
+              </p>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <button className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold transition-all transform hover:scale-105">
+                  Daftar Turnamen
+                </button>
+                <button className="px-8 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg font-semibold transition">
+                  Lihat Panduan
+                </button>
+              </div>
+            </div>
+          </div> 
         </div>
       </div>
 
@@ -175,9 +192,9 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg" />
+                <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg" />
                 <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  <h3 className="text-xl font-bold bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                     SportConnect
                   </h3>
                   <p className="text-xs text-gray-400">Competition Hub</p>
