@@ -265,7 +265,7 @@ export default function BracketPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         <BracketHeader
           acara={acara}
-          onBack={() => router.push("/pertandingan/bracket")}
+          onBack={() => router.push("/bracket")}
           onRefresh={fetchBracketData}
           loading={loading}
         />

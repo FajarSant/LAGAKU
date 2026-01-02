@@ -213,7 +213,7 @@ export default function BracketListPage() {
                 
                 <CardFooter className="pt-3 border-t">
                   <Link 
-                    href={`/pertandingan/bracket/${item.id}`} 
+                    href={`/bracket/${item.id}`} 
                     className="w-full"
                   >
                     <Button 
