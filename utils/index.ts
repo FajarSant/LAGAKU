@@ -1,5 +1,8 @@
 // utils/index.ts
 export type {
+  Pengguna,
+  AnggotaTim,
+  UserStats,
   Acara,
   Tim,
   Round,
@@ -13,7 +16,9 @@ export type {
   Match,
   BracketInfo,
   AcaraWithCount,
-  PertandinganWithRelations
+  PertandinganWithRelations,
+  MatchCountResult,
+  TeamQueryResult,
 } from '@/types/type';
 
 export {
