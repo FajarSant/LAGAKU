@@ -281,8 +281,8 @@ export default function ProfileContent({
                 <div className="space-y-1">
                   <Label className="text-sm font-normal text-muted-foreground">Alamat</Label>
                   <div className="flex items-start gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                    <p className="font-medium break-words">{user?.alamat || "-"}</p>
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-1 shrink-0" />
+                    <p className="font-medium wrap-break-word">{user?.alamat || "-"}</p>
                   </div>
                 </div>
                 <Separator />

@@ -1,12 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import StatusFilter from "@/components/home/StatusFilter";
 import MatchesList from "@/components/home/MatchesList";
 import Navigation from "@/components/navigation/navigation";
 import FeaturesSection from "@/components/home/FeaturesSection";
-import { Trophy, TrendingUp, Users, CalendarDays } from "lucide-react";
+import {
+  Trophy,
+  TrendingUp,
+  Users,
+  CalendarDays,
+  ChevronRight,
+  Zap,
+  Target,
+  Sparkles,
+  ArrowRight,
+  Flame,
+  Clock,
+  CalendarCheck,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function HomePage() {
   const [selectedStatus, setSelectedStatus] = useState("berlangsung");
@@ -28,22 +52,14 @@ export default function HomePage() {
     try {
       const supabase = createClient();
 
-      // Fetch semua statistik secara paralel
       const [tournamentsData, matchesData, teamsData, todayMatchesData] =
         await Promise.all([
-          // Jumlah turnamen
           supabase.from("acara").select("id", { count: "exact" }),
-
-          // Jumlah pertandingan
           supabase.from("pertandingan").select("id", { count: "exact" }),
-
-          // Jumlah tim aktif
           supabase
             .from("tim")
             .select("id", { count: "exact" })
             .eq("status", "aktif"),
-
-          // Pertandingan hari ini
           supabase
             .from("pertandingan")
             .select("id", { count: "exact" })
@@ -63,214 +79,318 @@ export default function HomePage() {
     }
   };
 
+  const StatCard = ({
+    icon: Icon,
+    label,
+    value,
+    color,
+    bgColor,
+    textColor,
+  }: {
+    icon: React.ElementType;
+    label: string;
+    value: number;
+    color: string;
+    bgColor: string;
+    textColor: string;
+  }) => (
+    <Card className="relative overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className={`text-sm font-medium ${textColor} mb-2`}>{label}</p>
+            {loadingStats ? (
+              <Skeleton className="h-8 w-20 bg-gray-200 dark:bg-gray-700" />
+            ) : (
+              <h3 className={`text-3xl font-bold ${textColor}`}>{value}</h3>
+            )}
+          </div>
+          <div className={`p-3 rounded-full ${bgColor}`}>
+            <Icon className={`w-6 h-6 ${color}`} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const statsData = [
+    {
+      icon: Trophy,
+      label: "Turnamen",
+      value: stats.tournaments,
+      color: "text-yellow-600 dark:text-yellow-400",
+      bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
+      textColor: "text-yellow-700 dark:text-yellow-300",
+    },
+    {
+      icon: TrendingUp,
+      label: "Pertandingan",
+      value: stats.matches,
+      color: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-100 dark:bg-green-900/30",
+      textColor: "text-green-700 dark:text-green-300",
+    },
+    {
+      icon: Users,
+      label: "Tim Aktif",
+      value: stats.activeTeams,
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-100 dark:bg-blue-900/30",
+      textColor: "text-blue-700 dark:text-blue-300",
+    },
+    {
+      icon: CalendarDays,
+      label: "Hari Ini",
+      value: stats.todayMatches,
+      color: "text-purple-600 dark:text-purple-400",
+      bgColor: "bg-purple-100 dark:bg-purple-900/30",
+      textColor: "text-purple-700 dark:text-purple-300",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-900 to-gray-950 text-white pb-20 md:pb-0">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 text-gray-900 dark:text-white transition-colors duration-300">
       <Navigation />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-r from-blue-900/20 to-purple-900/20" />
-        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-blue-500 to-transparent" />
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-linear-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10" />
 
-        <div className="container mx-auto px-4 py-12 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Selamat Datang di Arena Kompetisi
-            </h1>
-            <p className="text-xl text-gray-300 mb-10">
-              Platform turnamen terpadu untuk mengatur, ikuti, dan saksikan
-              pertandingan seru
-            </p>
+        <div className="container mx-auto px-4 py-12 md:py-16 lg:py-20 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <Badge className="mb-4 px-4 py-1.5 bg-linear-to-r from-blue-500 to-purple-500 text-white border-0 shadow-md">
+                <Zap className="w-3 h-3 mr-1.5" />
+                Platform Turnamen Terdepan
+              </Badge>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 hover:border-blue-500 transition">
-                <div className="flex flex-col items-center">
-                  <Trophy className="w-10 h-10 text-yellow-500 mb-3" />
-                  {loadingStats ? (
-                    <div className="h-8 w-16 bg-gray-700 rounded animate-pulse mb-2"></div>
-                  ) : (
-                    <span className="text-3xl font-bold">
-                      {stats.tournaments}
-                    </span>
-                  )}
-                  <span className="text-gray-400 text-sm">Turnamen</span>
-                </div>
-              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+                <span className="bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+                  Arena Kompetisi Digital
+                </span>
+              </h1>
 
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 hover:border-green-500 transition">
-                <div className="flex flex-col items-center">
-                  <TrendingUp className="w-10 h-10 text-green-500 mb-3" />
-                  {loadingStats ? (
-                    <div className="h-8 w-16 bg-gray-700 rounded animate-pulse mb-2"></div>
-                  ) : (
-                    <span className="text-3xl font-bold">{stats.matches}</span>
-                  )}
-                  <span className="text-gray-400 text-sm">Pertandingan</span>
-                </div>
-              </div>
-
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 hover:border-red-500 transition">
-                <div className="flex flex-col items-center">
-                  <Users className="w-10 h-10 text-red-500 mb-3" />
-                  {loadingStats ? (
-                    <div className="h-8 w-16 bg-gray-700 rounded animate-pulse mb-2"></div>
-                  ) : (
-                    <span className="text-3xl font-bold">
-                      {stats.activeTeams}
-                    </span>
-                  )}
-                  <span className="text-gray-400 text-sm">Tim Aktif</span>
-                </div>
-              </div>
-
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 hover:border-purple-500 transition">
-                <div className="flex flex-col items-center">
-                  <CalendarDays className="w-10 h-10 text-purple-500 mb-3" />
-                  {loadingStats ? (
-                    <div className="h-8 w-16 bg-gray-700 rounded animate-pulse mb-2"></div>
-                  ) : (
-                    <span className="text-3xl font-bold">
-                      {stats.todayMatches}
-                    </span>
-                  )}
-                  <span className="text-gray-400 text-sm">Hari Ini</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-16 text-center">
-            <div className="inline-block bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl border border-gray-700 p-8">
-              <h3 className="text-2xl font-bold mb-4">Siap untuk Kompetisi?</h3>
-              <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
-                Bergabung dengan ratusan tim dan ribuan pemain dalam turnamen
-                seru. Daftar sekarang dan raih kemenangan!
+              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
+                Platform turnamen terpadu untuk mengatur, ikuti, dan saksikan
+                pertandingan seru dengan teknologi terkini
               </p>
+
               <div className="flex flex-wrap gap-4 justify-center">
-                <button className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold transition-all transform hover:scale-105">
-                  Daftar Turnamen
-                </button>
-                <button className="px-8 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg font-semibold transition">
-                  Lihat Panduan
-                </button>
+                <Button
+                  size="lg"
+                  className="px-8 py-6 text-base bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  Mulai Kompetisi
+                  <ChevronRight className="ml-2 w-4 h-4" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="px-8 py-6 text-base border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-300"
+                >
+                  <Target className="mr-2 w-4 h-4" />
+                  Lihat Turnamen
+                </Button>
               </div>
             </div>
-          </div> 
+
+            {/* Stats Grid - Diperbaiki untuk light mode */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+              {statsData.map((stat, index) => (
+                <StatCard
+                  key={index}
+                  icon={stat.icon}
+                  label={stat.label}
+                  value={stat.value}
+                  color={stat.color}
+                  bgColor={stat.bgColor}
+                  textColor={stat.textColor}
+                />
+              ))}
+            </div>
+
+            {/* CTA Section */}
+            <Card className="border-0 shadow-xl bg-linear-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                  <div>
+                    <CardTitle className="text-xl md:text-2xl mb-2 flex items-center">
+                      <Sparkles className="w-5 h-5 mr-2 text-blue-500" />
+                      Siap untuk Kompetisi?
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 dark:text-gray-300">
+                      Bergabung dengan ratusan tim dan ribuan pemain dalam
+                      turnamen seru. Daftar sekarang dan raih kemenangan!
+                    </CardDescription>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      size="lg"
+                      className="px-6 py-5 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg group"
+                    >
+                      <Trophy className="mr-2 w-4 h-4 group-hover:animate-bounce" />
+                      Daftar Turnamen
+                      <ArrowRight className="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="px-6 py-5 border-2 border-gray-300 dark:border-gray-600"
+                    >
+                      Lihat Panduan
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Pertandingan</h2>
-          <p className="text-gray-400">
-            Lacak pertandingan dengan filter status
-          </p>
-        </div>
+        <Card className="border border-gray-200 dark:border-gray-800 shadow-lg">
+          <CardHeader className="pb-4 my-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Pertandingan
+                </CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
+                  Lacak pertandingan dengan filter status
+                </CardDescription>
+              </div>
+              <Tabs
+                value={selectedStatus}
+                onValueChange={(v) => {
+                  setSelectedStatus(v);
+                  setPage(1);
+                }}
+              >
+                <TabsList className="bg-gray-100 dark:bg-gray-800">
+                  <TabsTrigger
+                    value="berlangsung"
+                    className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                  >
+                    Berlangsung
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="dijadwalkan"
+                    className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
+                  >
+                    Dijadwalkan
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="selesai"
+                    className="data-[state=active]:bg-gray-500 data-[state=active]:text-white"
+                  >
+                    Selesai
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="semua"
+                    className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+                  >
+                    Semua
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
 
-        <StatusFilter
-          selectedStatus={selectedStatus}
-          setSelectedStatus={(v) => {
-            setSelectedStatus(v);
-            setPage(1); // Reset page saat tab diganti
-          }}
-        />
+          <CardContent className="pt-0">
+            {/* Status Filter */}
+            <div className="mb-6">
+              <StatusFilter
+                selectedStatus={selectedStatus}
+                setSelectedStatus={(v) => {
+                  setSelectedStatus(v);
+                  setPage(1);
+                }}
+              />
+            </div>
 
-        <div className="mt-8">
-          <MatchesList
-            selectedStatus={selectedStatus}
-            page={page}
-            setPage={setPage}
-          />
-        </div>
+            {/* Matches List */}
+            <div className="mt-6">
+              <MatchesList
+                selectedStatus={selectedStatus}
+                page={page}
+                setPage={setPage}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <FeaturesSection />
 
-      <footer className="border-t border-gray-800 bg-gray-900/50 backdrop-blur-sm mt-12">
+      {/* Footer */}
+      <footer className="border-t py-10 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/95 mt-12">
         <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg" />
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-white" />
+                </div>
                 <div>
-                  <h3 className="text-xl font-bold bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  <h3 className="text-xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     SportConnect
                   </h3>
-                  <p className="text-xs text-gray-400">Competition Hub</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Competition Hub
+                  </p>
                 </div>
               </div>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Platform turnamen olahraga terdepan untuk kompetisi yang adil
-                dan transparan.
+                dan transparan dengan teknologi modern.
               </p>
             </div>
 
             <div>
-              <h4 className="font-bold mb-4">Navigasi</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition">
-                    Beranda
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition">
-                    Turnamen
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition">
-                    Tim
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition">
-                    Jadwal
-                  </a>
-                </li>
+              <h4 className="font-bold mb-4 text-gray-900 dark:text-white">
+                Navigasi
+              </h4>
+              <ul className="space-y-2">
+                {["Beranda", "Turnamen", "Tim", "Jadwal"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href="#"
+                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm block py-1"
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
             <div>
-              <h4 className="font-bold mb-4">Layanan</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition">
-                    Buat Turnamen
-                  </a>
+              <h4 className="font-bold mb-4 text-gray-900 dark:text-white">
+                Kontak
+              </h4>
+              <ul className="space-y-2 text-gray-600 dark:text-gray-400 text-sm">
+                <li className="flex items-start py-1">
+                  <span className="font-medium mr-2 min-w-16">Email:</span>
+                  support@sportconnect.id
                 </li>
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition">
-                    Daftar Tim
-                  </a>
+                <li className="flex items-start py-1">
+                  <span className="font-medium mr-2 min-w-16">Telepon:</span>
+                  (021) 1234-5678
                 </li>
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition">
-                    Live Score
-                  </a>
+                <li className="flex items-start py-1">
+                  <span className="font-medium mr-2 min-w-16">Alamat:</span>
+                  Jakarta, Indonesia
                 </li>
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition">
-                    Statistik
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-4">Kontak</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li>Email: support@sportconnect.id</li>
-                <li>Telepon: (021) 1234-5678</li>
-                <li>Alamat: Jakarta, Indonesia</li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-            <p className="text-gray-500">
-              © 2025 SportConnect. All rights reserved.
+          <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              © {new Date().getFullYear()} SportConnect. All rights reserved. |
+              Platform Turnamen Modern
             </p>
           </div>
         </div>

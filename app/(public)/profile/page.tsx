@@ -79,7 +79,6 @@ export default function ProfilePage() {
 
       setUser(userData as Pengguna);
       setEditForm(userData);
-      toast.success("Data profil berhasil dimuat");
     } catch (error) {
       console.error("Error fetching user data:", error);
       toast.error("Gagal memuat data profil");
@@ -359,14 +358,14 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-100 dark:bg-linear-to-br dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 text-gray-900 dark:text-white pb-20 md:pb-0">
       <Navigation />
 
       <div className="container mx-auto px-4 py-8">
         {/* Profile Header */}
         <div className="mb-8 text-center">
           <div className="max-w-2xl mx-auto">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight bg-linear-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
               Profil Pengguna
             </h1>
             <p className="text-muted-foreground mt-4 text-lg md:text-xl leading-relaxed max-w-xl mx-auto">
@@ -375,7 +374,7 @@ export default function ProfilePage() {
 
             {/* Optional decorative element */}
             <div className="flex justify-center mt-6">
-              <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+              <div className="w-16 h-1 bg-linear-to-r from-blue-500 to-purple-500 rounded-full"></div>
             </div>
           </div>
         </div>

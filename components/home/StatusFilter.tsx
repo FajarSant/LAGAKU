@@ -3,7 +3,10 @@
 import { Flame, CalendarCheck, Trophy, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { Skeleton } from "../ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface StatusFilterProps {
   selectedStatus: string;
@@ -15,33 +18,45 @@ const statusOptions = [
     value: "berlangsung",
     label: "Berlangsung",
     icon: Flame,
-    color: "from-red-500 to-orange-500",
-    bgColor: "bg-gradient-to-r from-red-500/20 to-orange-500/20",
-    borderColor: "border-red-500/30",
+    color: "text-red-500",
+    activeColor: "from-red-500 to-orange-500",
+    lightBg: "bg-red-50 dark:bg-red-500/10",
+    darkBg: "bg-gradient-to-br from-red-500/20 to-orange-500/20 dark:from-red-900/30 dark:to-orange-900/30",
+    badgeColor: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    borderColor: "border-red-200 dark:border-red-800",
   },
   {
     value: "dijadwalkan",
     label: "Dijadwalkan",
     icon: Clock,
-    color: "from-blue-500 to-cyan-500",
-    bgColor: "bg-gradient-to-r from-blue-500/20 to-cyan-500/20",
-    borderColor: "border-blue-500/30",
+    color: "text-blue-500",
+    activeColor: "from-blue-500 to-cyan-500",
+    lightBg: "bg-blue-50 dark:bg-blue-500/10",
+    darkBg: "bg-gradient-to-br from-blue-500/20 to-cyan-500/20 dark:from-blue-900/30 dark:to-cyan-900/30",
+    badgeColor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    borderColor: "border-blue-200 dark:border-blue-800",
   },
   {
     value: "selesai",
     label: "Selesai",
     icon: Trophy,
-    color: "from-green-500 to-emerald-500",
-    bgColor: "bg-gradient-to-r from-green-500/20 to-emerald-500/20",
-    borderColor: "border-green-500/30",
+    color: "text-green-500",
+    activeColor: "from-green-500 to-emerald-500",
+    lightBg: "bg-green-50 dark:bg-green-500/10",
+    darkBg: "bg-gradient-to-br from-green-500/20 to-emerald-500/20 dark:from-green-900/30 dark:to-emerald-900/30",
+    badgeColor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    borderColor: "border-green-200 dark:border-green-800",
   },
   {
     value: "semua",
     label: "Semua",
     icon: CalendarCheck,
-    color: "from-purple-500 to-pink-500",
-    bgColor: "bg-gradient-to-r from-purple-500/20 to-pink-500/20",
-    borderColor: "border-purple-500/30",
+    color: "text-purple-500",
+    activeColor: "from-purple-500 to-pink-500",
+    lightBg: "bg-purple-50 dark:bg-purple-500/10",
+    darkBg: "bg-gradient-to-br from-purple-500/20 to-pink-500/20 dark:from-purple-900/30 dark:to-pink-900/30",
+    badgeColor: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    borderColor: "border-purple-200 dark:border-purple-800",
   },
 ];
 
@@ -55,6 +70,7 @@ export default function StatusFilter({
     selesai: 0,
     semua: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchCounts();
@@ -64,7 +80,6 @@ export default function StatusFilter({
     try {
       const supabase = createClient();
 
-      // Fetch counts untuk setiap status
       const [berlangsung, dijadwalkan, selesai, semua] = await Promise.all([
         supabase
           .from("pertandingan")
@@ -89,70 +104,92 @@ export default function StatusFilter({
       });
     } catch (error) {
       console.error("Error fetching counts:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      className=" grid gap-4
-        grid-cols-2
-        sm:grid-cols-3
-        lg:grid-cols-4
-        p-6 rounded-2xl
-        bg-gray-800/30 backdrop-blur-sm
-        border border-gray-700"
-    >
-      {statusOptions.map((option) => {
-        const Icon = option.icon;
-        const isActive = selectedStatus === option.value;
+    <TooltipProvider>
+      <div className="w-full">
+        {/* Grid dengan ukuran konsisten */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
+          {statusOptions.map((option) => {
+            const Icon = option.icon;
+            const isActive = selectedStatus === option.value;
+            const count = counts[option.value as keyof typeof counts];
 
-        return (
-          <button
-            key={option.value}
-            onClick={() => setSelectedStatus(option.value)}
-            className={`flex items-center justify-between gap-3 px-5 py-3 rounded-xl border transition-all duration-300
-    ${
-      isActive
-        ? `${option.bgColor} ${option.borderColor} shadow-lg`
-        : "bg-gray-800/50 border-gray-700 hover:bg-gray-700/50"
-    }`}
-          >
-            {/* LEFT */}
-            <div className="flex items-center gap-3 min-w-0">
-              <div
-                className={`p-2 rounded-lg shrink-0 ${
-                  isActive ? "bg-white/10" : "bg-gray-700"
-                }`}
-              >
-                <Icon
-                  className={`h-5 w-5 ${
-                    isActive
-                      ? `text-${option.color.split("-")[1]}-400`
-                      : "text-gray-400"
-                  }`}
-                />
-              </div>
+            return (
+              <Tooltip key={option.value}>
+                <TooltipTrigger asChild>
+                  <Card
+                    className={`
+                      relative cursor-pointer transition-all duration-300 
+                      hover:scale-[1.02] hover:shadow-lg
+                      border-2 h-28 md:h-32 flex flex-col justify-center
+                      ${isActive ? option.darkBg : "bg-white dark:bg-gray-800"}
+                      ${isActive ? "border-gray-300 dark:border-gray-600" : "border-gray-100 dark:border-gray-700"}
+                      hover:border-gray-300 dark:hover:border-gray-600
+                    `}
+                    onClick={() => setSelectedStatus(option.value)}
+                  >
+                    <div className="p-4 flex flex-col items-center justify-center h-full">
+                      {/* Icon Container - Ukuran Konsisten */}
+                      <div className={`
+                        mb-3 p-3 rounded-xl flex items-center justify-center
+                        ${isActive ? option.darkBg : option.lightBg}
+                        w-12 h-12 md:w-14 md:h-14
+                      `}>
+                        <Icon className={`h-6 w-6 md:h-7 md:w-7 ${option.color}`} />
+                      </div>
+                      
+                      {/* Label dan Count - Terpusat */}
+                      <div className="text-center space-y-1 w-full">
+                        <h3 className={`
+                          font-semibold text-sm md:text-base
+                          ${isActive 
+                            ? `bg-linear-to-r ${option.activeColor} bg-clip-text text-transparent font-bold`
+                            : "text-gray-800 dark:text-gray-200"
+                          }
+                        `}>
+                          {option.label}
+                        </h3>
+                        
+                        <div className="flex items-center justify-center">
+                          {loading ? (
+                            <Skeleton className="h-4 w-12" />
+                          ) : (
+                            <Badge 
+                              variant="outline" 
+                              className={`
+                                text-xs px-2 py-0.5 min-w-8 h-5
+                                ${option.badgeColor} border-0
+                                ${isActive ? 'opacity-90' : 'opacity-100'}
+                              `}
+                            >
+                              {count}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-              <span
-                className={`font-medium truncate ${
-                  isActive
-                    ? `bg-gradient-to-r ${option.color} bg-clip-text text-transparent`
-                    : "text-gray-300"
-                }`}
-              >
-                {option.label}
-              </span>
-            </div>
+                    {/* Active Indicator */}
+                    {isActive && (
+                      <div className="absolute inset-0 border-2 rounded-lg border-gray-400 dark:border-gray-500 pointer-events-none" />
+                    )}
+                  </Card>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">Lihat {option.label.toLowerCase()} pertandingan</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
 
-            {/* RIGHT */}
-            {counts[option.value as keyof typeof counts] > 0 && (
-              <span className="ml-2 shrink-0 px-2 py-1 text-xs rounded-full bg-white/10 text-white font-medium">
-                {counts[option.value as keyof typeof counts]}
-              </span>
-            )}
-          </button>
-        );
-      })}
-    </div>
+      
+      </div>
+    </TooltipProvider>
   );
 }

@@ -73,7 +73,7 @@ export default function ProfileSidebar({ user }: ProfileSidebarProps) {
         <div className="flex flex-col items-center mb-6">
           <Avatar className="h-28 w-28 mb-4 border-4 border-background shadow-lg">
             <AvatarImage src={user?.avatar_url} />
-            <AvatarFallback className="text-xl bg-gradient-to-r from-blue-500 to-purple-600">
+            <AvatarFallback className="text-xl bg-linear-to-r from-blue-500 to-purple-600">
               {getInitials(user?.nama || "User")}
             </AvatarFallback>
           </Avatar>
@@ -98,7 +98,7 @@ export default function ProfileSidebar({ user }: ProfileSidebarProps) {
         <div className="space-y-4">
           {infoItems.map((item, index) => (
             <div key={index} className="flex items-start gap-3">
-              <div className={`p-2 rounded-lg ${item.bgColor} flex-shrink-0`}>
+              <div className={`p-2 rounded-lg ${item.bgColor} shrink-0`}>
                 <item.icon className={`h-4 w-4 ${item.color}`} />
               </div>
               <div className="min-w-0 flex-1">

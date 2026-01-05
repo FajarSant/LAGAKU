@@ -47,7 +47,7 @@ export default function NotFoundPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/5 px-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-br from-background via-background to-primary/5 px-4">
       {/* Background effects - SERVER SIDE SAFE */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute left-1/4 top-1/4 h-64 w-64 animate-pulse rounded-full bg-primary/10 blur-3xl" />
@@ -78,13 +78,13 @@ export default function NotFoundPage() {
               <div className="relative">
                 {/* Counting animation */}
                 <div className="relative mb-8">
-                  <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-background to-secondary/30 p-8 shadow-inner">
+                  <div className="overflow-hidden rounded-2xl bg-linear-to-br from-background to-secondary/30 p-8 shadow-inner">
                     <div className="text-center">
                       <div className="mb-2 text-sm font-medium text-muted-foreground">
                         Mencari halaman...
                       </div>
                       <div className="text-8xl font-black tracking-tighter">
-                        <span className="bg-gradient-to-r from-primary via-primary/80 to-destructive bg-clip-text text-transparent">
+                        <span className="bg-linear-to-r from-primary via-primary/80 to-destructive bg-clip-text text-transparent">
                           {counter}
                         </span>
                       </div>
@@ -118,11 +118,11 @@ export default function NotFoundPage() {
                 <div>
                   <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
                     Halaman Hilang di{" "}
-                    <span className="bg-gradient-to-r from-primary to-destructive bg-clip-text text-transparent">
+                    <span className="bg-linear-to-r from-primary to-destructive bg-clip-text text-transparent">
                       Alam Semesta Digital
                     </span>
                   </h1>
-                  <div className="mt-4 h-1 w-24 rounded-full bg-gradient-to-r from-primary to-destructive" />
+                  <div className="mt-4 h-1 w-24 rounded-full bg-linear-to-r from-primary to-destructive" />
                 </div>
 
                 <p className="text-lg text-muted-foreground">
@@ -182,7 +182,7 @@ export default function NotFoundPage() {
               <div className="space-y-4 pt-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Link href="/">
-                    <div className="group flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 px-6 py-4 font-medium text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/20">
+                    <div className="group flex items-center justify-center gap-3 rounded-xl bg-linear-to-r from-primary to-primary/80 px-6 py-4 font-medium text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/20">
                       <FiHome className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
                       <span>Kembali ke Beranda</span>
                     </div>

@@ -51,13 +51,13 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           cardVariants({ variant, hoverable, rounded }),
           className,
           glow && "shadow-[0_0_40px_-10px] shadow-primary/20",
-          gradient && "bg-gradient-to-br from-card via-card/80 to-card/60"
+          gradient && "bg-linear-to-br from-card via-card/80 to-card/60"
         )}
         {...props}
       >
         {/* Glow effect */}
         {glow && (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
         )}
         
         {/* Content wrapper */}
@@ -78,7 +78,7 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>
         ref={ref}
         className={cn(
           "relative px-6 pt-6 pb-4 border-b border-border/50",
-          "after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-primary/20 after:to-transparent",
+          "after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-linear-to-r after:from-transparent after:via-primary/20 after:to-transparent",
           className
         )}
         {...props}
@@ -96,7 +96,7 @@ const CardTitle = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
         ref={ref}
         className={cn(
           "text-xl font-semibold tracking-tight text-foreground",
-          "bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent",
+          "bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent",
           className
         )}
         {...props}
@@ -146,7 +146,7 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>
         ref={ref}
         className={cn(
           "relative px-6 py-4 border-t border-border/50",
-          "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary/10 before:to-transparent",
+          "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-primary/10 before:to-transparent",
           "flex items-center gap-3",
           className
         )}
