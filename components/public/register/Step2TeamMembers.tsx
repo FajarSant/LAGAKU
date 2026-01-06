@@ -127,7 +127,7 @@ export default function Step2TeamMembers({
                       onClick={() => addPlayer(player)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-linear-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-full flex items-center justify-center">
                           <span className="font-semibold text-blue-600 dark:text-blue-400">
                             {player.nama.charAt(0)}
                           </span>
@@ -186,7 +186,7 @@ export default function Step2TeamMembers({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center">
                           <span className="font-semibold text-gray-600 dark:text-gray-300">
                             {index + 1}
                           </span>
@@ -240,7 +240,7 @@ export default function Step2TeamMembers({
         )}
       </div>
 
-      <Alert className="bg-linear-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800">
+      <Alert className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800">
         <AlertDescription className="text-amber-800 dark:text-amber-300">
           <strong>Catatan:</strong> Pastikan data anggota tim sudah benar. 
           Setelah terdaftar, anggota tidak dapat diubah.

@@ -15,16 +15,16 @@ export default function RegisterTeamFooter({
   loading,
   onPrevStep,
   onNextStep,
-  onSubmit
+  onSubmit,
 }: RegisterTeamFooterProps) {
   return (
-    <CardFooter className="border-t bg-gray-50 dark:bg-gray-800/50">
+    <CardFooter className="border-t bg-gray-50 dark:bg-gray-800/50 px-6 py-4">
       <div className="flex justify-between w-full">
         <div>
           {step > 1 && (
-            <Button 
-              variant="outline" 
-              onClick={onPrevStep} 
+            <Button
+              variant="outline"
+              onClick={onPrevStep}
               disabled={loading}
               className="gap-2"
             >
@@ -33,19 +33,19 @@ export default function RegisterTeamFooter({
             </Button>
           )}
         </div>
-        
+
         <div className="flex gap-3">
           {step < 3 ? (
-            <Button 
-              onClick={onNextStep} 
+            <Button
+              onClick={onNextStep}
               className="gap-2 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              {step === 2 ? 'Konfirmasi' : 'Lanjut'}
+              {step === 2 ? "Konfirmasi" : "Lanjut"}
               <ArrowLeft className="h-4 w-4 rotate-180" />
             </Button>
           ) : (
-            <Button 
-              onClick={onSubmit} 
+            <Button
+              onClick={onSubmit}
               disabled={loading}
               className="gap-2 bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/25"
             >

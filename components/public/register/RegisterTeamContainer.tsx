@@ -9,9 +9,8 @@ import RegisterTeamProgress from "./RegisterTeamProgress";
 import RegisterTeamForm from "./RegisterTeamForm";
 import RegisterTeamFooter from "./RegisterTeamFooter";
 import RegisterTeamHeader from "./RegisterTeamHeader";
+import RegisterTeamInfoCards from "./RegisterTeamInfoCards"; // <-- Ditambahkan
 import { useTeamRegistration } from "@/hooks/useTeamRegistration";
-
-// Hooks
 
 export default function RegisterTeamContainer() {
   const router = useRouter();
@@ -55,7 +54,12 @@ export default function RegisterTeamContainer() {
     try {
       const success = await handleSubmit();
       if (success) {
-        toast.success("Tim berhasil didaftarkan!");
+        toast.success(
+          <div className="space-y-2">
+            <p className="font-semibold">Tim berhasil didaftarkan!</p>
+            <p className="text-sm">Tim {formData.nama} sekarang dapat berpartisipasi dalam kompetisi.</p>
+          </div>
+        );
         setTimeout(() => {
           router.push("/profile");
         }, 2000);
@@ -99,6 +103,9 @@ export default function RegisterTeamContainer() {
           onSubmit={handleFormSubmit}
         />
       </div>
+
+      {/* Kartu informasi ditempatkan di sini, di luar CardFooter */}
+      <RegisterTeamInfoCards />
     </div>
   );
 }
