@@ -250,3 +250,27 @@ export type DebugInfo = {
   } | null;
   queryTimestamp: string;
 };
+
+export interface TeamRegistrationData {
+  nama: string;
+  jurusan: string;
+  angkatan: string;
+  nomor_hp: string;
+  acara_id: string;
+}
+
+export interface TeamMemberForm {
+  nama_pemain: string;
+  nim: string;
+}
+
+export interface PlayerSearchResult {
+  id: string;
+  nama: string;
+  email: string;
+  nim: string;
+  fakultas?: string;
+  program_studi?: string;
+  jenis_kelamin?: EnumJenisKelamin;
+}
+

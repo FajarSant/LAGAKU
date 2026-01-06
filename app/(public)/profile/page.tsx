@@ -8,11 +8,11 @@ import { toast } from "sonner";
 import { useTheme } from "next-themes";
 
 // Components
-import ProfileStats from "@/components/profile/ProfileStats";
-import ProfileSidebar from "@/components/profile/ProfileSidebar";
-import ProfileContent from "@/components/profile/ProfileContent";
-import RecentTeams from "@/components/profile/RecentTeams";
-import RecentMatches from "@/components/profile/RecentMatches";
+import ProfileStats from "@/components/public/profile/ProfileStats";
+import ProfileSidebar from "@/components/public/profile/ProfileSidebar";
+import ProfileContent from "@/components/public/profile/ProfileContent";
+import RecentTeams from "@/components/public/profile/RecentTeams";
+import RecentMatches from "@/components/public/profile/RecentMatches";
 
 // Types
 import {
@@ -23,8 +23,8 @@ import {
   TeamQueryResult,
   UserStats,
 } from "@/utils";
-import ProfileLoading from "@/components/profile/Loading";
-import ProfileFooter from "@/components/profile/ProfileFooter";
+import ProfileLoading from "@/components/public/profile/Loading";
+import ProfileFooter from "@/components/public/profile/ProfileFooter";
 
 export default function ProfilePage() {
   const router = useRouter();

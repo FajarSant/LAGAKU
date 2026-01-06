@@ -1,3 +1,4 @@
+import { TeamRegistrationData } from './../types/type';
 // utils/index.ts
 export type {
   Pengguna,
@@ -19,6 +20,9 @@ export type {
   PertandinganWithRelations,
   MatchCountResult,
   TeamQueryResult,
+  TeamMemberForm,
+  TeamRegistrationData,
+  PlayerSearchResult,
 } from '@/types/type';
 
 export {
