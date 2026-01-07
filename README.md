@@ -1,5 +1,4 @@
 Ligaku - Platform Turnamen Olahraga
-https://via.placeholder.com/150x50/3b82f6/ffffff?text=LIGAKU
 
 Ligaku adalah platform turnamen olahraga digital yang memudahkan pengelolaan, partisipasi, dan pelacakan kompetisi olahraga dengan teknologi modern.
 
