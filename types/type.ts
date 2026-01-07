@@ -1,8 +1,14 @@
+// =======================================================
+// ENUM TYPES
+// =======================================================
 export type EnumJenisKelamin = "L" | "P";
 export type EnumStatusMatch = "dijadwalkan" | "berlangsung" | "selesai";
 export type EnumStatusTim = "aktif" | "gugur";
 export type EnumPeran = "admin" | "mahasiswa";
 
+// =======================================================
+// USER RELATED TYPES
+// =======================================================
 export interface Pengguna {
   id: string;
   nama: string;
@@ -27,6 +33,19 @@ export interface UserStats {
   upcomingMatches: number;
 }
 
+export interface PlayerSearchResult {
+  id: string;
+  nama: string;
+  email: string;
+  nim: string;
+  fakultas?: string;
+  program_studi?: string;
+  jenis_kelamin?: EnumJenisKelamin;
+}
+
+// =======================================================
+// TOURNAMENT (ACARA) TYPES
+// =======================================================
 export interface Acara {
   id: string;
   nama: string;
@@ -34,6 +53,11 @@ export interface Acara {
   dibuat_pada: string;
   tanggal_mulai?: string | null;
   tanggal_selesai?: string | null;
+}
+
+export interface AcaraSimple {
+  id: string;
+  nama: string;
 }
 
 export type AcaraWithCount = {
@@ -56,15 +80,9 @@ export type AcaraFromDB = {
   pertandingan?: { id: string }[];
 };
 
-export interface AcaraSimple {
-  id: string;
-  nama: string;
-}
-
-export interface PesertaAcara {
-  id: string;
-  tim_id: string;
-}
+// =======================================================
+// TEAM (TIM) TYPES
+// =======================================================
 export interface Tim {
   id: string;
   nama: string;
@@ -75,40 +93,28 @@ export interface Tim {
   };
 }
 
-export interface AnggotaTim {
-  id: string;
-  nama_pemain: string;
-  nim?: string;
-  tim?: Tim;
-}
 export interface TimSimple {
   id: string;
   nama: string;
 }
+
+export interface TeamRegistrationData {
+  nama: string;
+  jurusan: string;
+  angkatan: string;
+  nomor_hp: string;
+  acara_id: string;
+}
+
+export interface PesertaAcara {
+  id: string;
+  tim_id: string;
+}
+
 export interface PesertaTimRow {
   peserta_id: string;
   tim: Tim;
 }
-export interface FormState {
-  acara_id: string;
-  tanggal_pertandingan: string;
-  waktu_pertandingan: string;
-}
-export interface Tim {
-  id: string;
-  nama: string;
-  status: string;
-}
-
-export type Match = {
-  id: string;
-  status: string;
-  skor_tim_a: number | null;
-  skor_tim_b: number | null;
-  tim_a: { nama: string } | null;
-  tim_b: { nama: string } | null;
-  round: { nama: string; urutan: number };
-};
 
 export interface TeamQueryResult {
   tim_id: string;
@@ -118,10 +124,24 @@ export interface TeamQueryResult {
   };
 }
 
-export interface MatchCountResult {
-  count: number;
+// =======================================================
+// TEAM MEMBER (ANGGOTA TIM) TYPES
+// =======================================================
+export interface AnggotaTim {
+  id: string;
+  nama_pemain: string;
+  nim?: string;
+  tim?: Tim;
 }
 
+export interface TeamMemberForm {
+  nama_pemain: string;
+  nim: string;
+}
+
+// =======================================================
+// ROUND TYPES
+// =======================================================
 export interface Round {
   id: string;
   nama: string;
@@ -133,26 +153,9 @@ export interface Round {
   [key: string]: any;
 }
 
-// export interface Pertandingan {
-//   id: string;
-//   acara_id: string;
-//   round_id: string;
-//   tim_a_id: string | null;
-//   tim_b_id: string | null;
-//   status: string;
-//   skor_tim_a: number | null;
-//   skor_tim_b: number | null;
-//   pemenang_id: string | null;
-//   is_bye: boolean;
-//   tanggal_pertandingan?: string;
-//   waktu_pertandingan?: string;
-//   tim_a?: { nama: string };
-//   tim_b?: { nama: string };
-//   acara?: { nama: string };
-//   round?: { nama: string };
-//   dibuat_pada: string;
-// }
-
+// =======================================================
+// MATCH (PERTANDINGAN) TYPES
+// =======================================================
 export interface Pertandingan {
   id: string;
   status: EnumStatusMatch;
@@ -169,6 +172,10 @@ export interface Pertandingan {
   tim_a_id?: string;
   tim_b_id?: string;
   pemenang_id?: string;
+  lokasi_lapangan?: string;
+  url_lokasi_maps?: string;
+  durasi_pertandingan?: number;
+  dibuat_pada: string;
 }
 
 export type PertandinganWithRelations = {
@@ -178,12 +185,12 @@ export type PertandinganWithRelations = {
   skor_tim_b: number | null;
   tim_a_id: string | null;
   tim_b_id: string | null;
-  tim_a: Tim | null; // Bukan array
-  tim_b: Tim | null; // Bukan array
+  tim_a: Tim | null;
+  tim_b: Tim | null;
   round_id: string | null;
-  round: Round | null; // Bukan array
+  round: Round | null;
   acara_id: string;
-  acara: Acara | null; // Bukan array
+  acara: Acara | null;
   dibuat_pada: string;
 };
 
@@ -194,19 +201,70 @@ export type PertandinganFromSupabase = {
   skor_tim_b: number | null;
   tim_a_id: string | null;
   tim_b_id: string | null;
-  tim_a: Tim[]; // Array dari Supabase
-  tim_b: Tim[]; // Array dari Supabase
+  tim_a: Tim[];
+  tim_b: Tim[];
   round_id: string | null;
-  round: Round[]; // Array dari Supabase
+  round: Round[];
   acara_id: string;
-  acara: Acara[]; // Array dari Supabase
+  acara: Acara[];
   dibuat_pada: string;
 };
-export interface FormState {
+
+export interface SupabasePertandingan {
+  id: string;
+  status: EnumStatusMatch;
+  tanggal_pertandingan: string | null;
+  waktu_pertandingan: string | null;
+  skor_tim_a: number | null;
+  skor_tim_b: number | null;
+  tim_a_id: string | null;
+  tim_b_id: string | null;
+  pemenang_id: string | null;
   acara_id: string;
-  tanggal_pertandingan: string;
-  waktu_pertandingan: string;
+  round_id: string;
+  lokasi_lapangan: string | null;
+  url_lokasi_maps: string | null;
+  durasi_pertandingan: number | null;
+  dibuat_pada: string;
+  tim_a: Tim | null;
+  tim_b: Tim | null;
+  acara: { nama: string } | null;
+  round: { nama: string; urutan: number } | null;
 }
+
+// =======================================================
+// MATCH RELATION TYPES
+// =======================================================
+export type Match = {
+  id: string;
+  status: string;
+  skor_tim_a: number | null;
+  skor_tim_b: number | null;
+  tim_a: { nama: string } | null;
+  tim_b: { nama: string } | null;
+  round: { nama: string; urutan: number };
+};
+
+// =======================================================
+// SCHEDULE (JADWAL) TYPES
+// =======================================================
+export interface JadwalFilter {
+  searchQuery: string;
+  dateFilter: string;
+  statusFilter: EnumStatusMatch | "semua";
+  acaraFilter: string;
+}
+
+export interface ScheduleStats {
+  totalJadwal: number;
+  berlangsung: number;
+  dijadwalkan: number;
+  selesai: number;
+}
+
+// =======================================================
+// BRACKET TYPES
+// =======================================================
 export interface BracketInfo {
   totalTim: number;
   bracketSize: number;
@@ -221,12 +279,19 @@ export interface BracketRoundData {
   matches: Pertandingan[];
   isPlaceholder?: boolean;
 }
-export interface MatchStatusConfig {
-  bg: string;
-  label: string;
-  text: string;
-  border: string;
+
+// =======================================================
+// FORM STATE TYPES
+// =======================================================
+export interface FormState {
+  acara_id: string;
+  tanggal_pertandingan: string;
+  waktu_pertandingan: string;
 }
+
+// =======================================================
+// STATISTICS TYPES
+// =======================================================
 export interface StatsData {
   rounds: number;
   totalMatches: number;
@@ -234,6 +299,23 @@ export interface StatsData {
   totalTeams: number;
 }
 
+export interface MatchCountResult {
+  count: number;
+}
+
+// =======================================================
+// UI CONFIGURATION TYPES
+// =======================================================
+export interface MatchStatusConfig {
+  bg: string;
+  label: string;
+  text: string;
+  border: string;
+}
+
+// =======================================================
+// ERROR AND DEBUG TYPES
+// =======================================================
 export type SupabaseError = {
   message: string;
   details?: string;
@@ -251,26 +333,27 @@ export type DebugInfo = {
   queryTimestamp: string;
 };
 
-export interface TeamRegistrationData {
-  nama: string;
-  jurusan: string;
-  angkatan: string;
-  nomor_hp: string;
-  acara_id: string;
-}
-
-export interface TeamMemberForm {
-  nama_pemain: string;
-  nim: string;
-}
-
-export interface PlayerSearchResult {
+// =======================================================
+// SUPABASE SPECIFIC TYPES
+// =======================================================
+export interface SupabaseScheduleResult {
   id: string;
-  nama: string;
-  email: string;
-  nim: string;
-  fakultas?: string;
-  program_studi?: string;
-  jenis_kelamin?: EnumJenisKelamin;
+  status: EnumStatusMatch;
+  tanggal_pertandingan?: string;
+  waktu_pertandingan?: string;
+  skor_tim_a?: number;
+  skor_tim_b?: number;
+  tim_a?: { nama: string; status: string }[];
+  tim_b?: { nama: string; status: string }[];
+  acara?: { nama: string }[];
+  round?: { nama: string; urutan: number }[];
+  acara_id?: string;
+  round_id?: string;
+  tim_a_id?: string;
+  tim_b_id?: string;
+  pemenang_id?: string;
+  lokasi_lapangan?: string;
+  url_lokasi_maps?: string;
+  durasi_pertandingan?: number;
+  dibuat_pada: string;
 }
-
