@@ -37,4 +37,4 @@ export {
   formatMatchDate,
   calculateCompletionPercentage,
   isFinalRound
-} from './bracketUtils';
+} from './BracketUtils';

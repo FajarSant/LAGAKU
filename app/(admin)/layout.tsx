@@ -13,7 +13,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const goToProfile = () => router.push("/profile");
 
-  // Redirect jika bukan admin
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
@@ -26,7 +25,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [user, isAdmin, isLoading, router]);
 
-  // Show loading
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -38,7 +36,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Jika tidak ada user atau bukan admin
   if (!user || !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">

@@ -167,6 +167,7 @@ export interface Pertandingan {
   tim_b?: { nama: string };
   acara?: { nama: string };
   round?: { nama: string };
+  is_bye?: boolean;
   acara_id?: string;
   round_id?: string;
   tim_a_id?: string;

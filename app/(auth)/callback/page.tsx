@@ -43,7 +43,6 @@ export default function AuthCallbackPage() {
 
     if (existing) return existing;
 
-    // Insert baru (disesuaikan dengan struktur tabel)
     const { data, error } = await supabase
       .from("pengguna")
       .insert({
@@ -88,7 +87,6 @@ export default function AuthCallbackPage() {
 
         const profile = await ensureUserProfile(user);
 
-        // Redirect berdasarkan verifikasi
         if (!profile.is_verified) {
           router.replace("/konfirmasi-identitas");
         } else {

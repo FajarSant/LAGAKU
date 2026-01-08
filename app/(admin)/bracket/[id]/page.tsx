@@ -1,4 +1,3 @@
-// page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,13 +6,17 @@ import { createClient } from "@/lib/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertCircle as AlertCircleIcon } from "lucide-react";
-import { Acara, BracketRoundData, Round, StatsData } from "@/utils";
+import { Acara, BracketRoundData, Round, StatsData, Pertandingan } from "@/utils";
 import { LoadingBracket } from "@/components/admin/bracket/LoadingBracket";
 import { BracketHeader } from "@/components/admin/bracket/BracketHeader";
 import { EmptyBracket } from "@/components/admin/bracket/EmpatyBracket";
 import { BracketRound } from "@/components/admin/bracket/BracketRound";
 import { BracketStats } from "@/components/admin/bracket/BracketStats";
 import { BracketLegend } from "@/components/admin/bracket/BracketLagend";
+
+type PertandinganWithBye = Pertandingan & {
+  is_bye?: boolean;
+};
 
 export default function BracketPage() {
   const params = useParams();
@@ -37,7 +40,6 @@ export default function BracketPage() {
       setLoading(true);
       setError(null);
 
-      // 1. Fetch acara details
       const { data: acaraData, error: acaraError } = await supabase
         .from("acara")
         .select("*")
@@ -50,7 +52,6 @@ export default function BracketPage() {
       }
       setAcara(acaraData);
 
-      // 2. Fetch teams for this acara
       const { data: timData, error: timError } = await supabase
         .from("tim")
         .select("id, nama, status")
@@ -58,7 +59,6 @@ export default function BracketPage() {
 
       const totalTeams = timData?.length || 0;
 
-      // 3. Fetch rounds for this acara - include ALL fields
       const { data: roundsData, error: roundsError } = await supabase
         .from("round")
         .select("*")
@@ -82,7 +82,6 @@ export default function BracketPage() {
         return;
       }
 
-      // 4. Fetch matches for this acara
       const { data: matchesData, error: matchesError } = await supabase
         .from("pertandingan")
         .select("*")
@@ -94,7 +93,6 @@ export default function BracketPage() {
         return;
       }
 
-      // 5. Process bracket rounds
       const roundsWithMatches: BracketRoundData[] = [];
 
       for (const round of roundsData) {
@@ -102,7 +100,6 @@ export default function BracketPage() {
           (m) => m.round_id === round.id
         );
 
-        // Enrich matches with team data
         const enrichedMatches = roundMatches.map((match) => ({
           ...match,
           tim_a: match.tim_a_id
@@ -128,22 +125,26 @@ export default function BracketPage() {
         });
       }
 
-      // 6. Generate placeholder round if last round is completed
       if (roundsWithMatches.length > 0) {
         const lastRound = roundsWithMatches[roundsWithMatches.length - 1];
         const lastRoundMatches = lastRound.matches;
 
         const allMatchesCompleted = lastRoundMatches.every(
-          (m) => m.status === "selesai" || m.is_bye
+          (m) => m.status === "selesai" || (m as PertandinganWithBye).is_bye
         );
 
         const winnersFromLastRound = lastRoundMatches
-          .filter((m) => m.pemenang_id || m.is_bye)
-          .map((m) => (m.is_bye ? m.tim_a_id : m.pemenang_id))
+          .filter((m) => m.pemenang_id || (m as PertandinganWithBye).is_bye)
+          .map((m) => 
+            (m as PertandinganWithBye).is_bye 
+              ? m.tim_a_id 
+              : m.pemenang_id
+          )
           .filter(Boolean) as string[];
 
         if (allMatchesCompleted && winnersFromLastRound.length > 1) {
           const nextRoundUrutan = lastRound.round.urutan + 1;
+          const currentTime = new Date().toISOString();
 
           const placeholderRound: Round = {
             id: `placeholder-${nextRoundUrutan}`,
@@ -157,33 +158,40 @@ export default function BracketPage() {
                 : `Round ${nextRoundUrutan}`,
             urutan: nextRoundUrutan,
             acara_id: acaraId,
-            dibuat_pada: new Date().toISOString(),
+            dibuat_pada: currentTime,
             min_tim: 2,
             max_tim: 2,
           };
 
-          const placeholderMatches = [];
+          const placeholderMatches: Pertandingan[] = [];
           for (let i = 0; i < Math.ceil(winnersFromLastRound.length / 2); i++) {
             const timAId = winnersFromLastRound[i * 2];
             const timBId = winnersFromLastRound[i * 2 + 1];
 
-            placeholderMatches.push({
+            const placeholderMatch: Pertandingan = {
               id: `placeholder-match-${nextRoundUrutan}-${i}`,
               acara_id: acaraId,
               round_id: placeholderRound.id,
-              tim_a_id: timAId || null,
-              tim_b_id: timBId || null,
+              tim_a_id: timAId,
+              tim_b_id: timBId,
               status: "dijadwalkan",
-              skor_tim_a: null,
-              skor_tim_b: null,
-              pemenang_id: null,
+              skor_tim_a: undefined,
+              skor_tim_b: undefined,
+              pemenang_id: undefined,
               is_bye: false,
-              tanggal_pertandingan: null,
-              waktu_pertandingan: null,
+              tanggal_pertandingan: undefined,
+              waktu_pertandingan: undefined,
+              lokasi_lapangan: undefined,
+              url_lokasi_maps: undefined,
+              durasi_pertandingan: undefined,
+              dibuat_pada: currentTime,
               tim_a: timAId ? timData?.find((t) => t.id === timAId) : undefined,
               tim_b: timBId ? timData?.find((t) => t.id === timBId) : undefined,
               round: placeholderRound,
-            });
+              acara: acaraData,
+            };
+
+            placeholderMatches.push(placeholderMatch);
           }
 
           roundsWithMatches.push({
@@ -196,7 +204,6 @@ export default function BracketPage() {
 
       setBracketRounds(roundsWithMatches);
 
-      // 7. Calculate statistics
       const totalMatches = roundsWithMatches.reduce(
         (sum, round) => sum + round.matches.length,
         0
@@ -274,7 +281,6 @@ export default function BracketPage() {
           <EmptyBracket acaraId={acaraId} onCreateMatch={handleCreateMatch} />
         ) : (
           <>
-            {/* Bracket Rounds */}
             <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
               {bracketRounds.map((bracketRound, index) => (
                 <BracketRound
@@ -285,10 +291,8 @@ export default function BracketPage() {
               ))}
             </div>
 
-            {/* Stats */}
             <BracketStats stats={stats} />
 
-            {/* Legend */}
             <BracketLegend />
           </>
         )}
