@@ -17,18 +17,17 @@ import RecentMatches from "@/components/public/profile/RecentMatches";
 // Types
 import {
   AnggotaTim,
-  MatchCountResult,
   Pengguna,
   Pertandingan,
   TeamQueryResult,
   UserStats,
+  EnumStatusMatch,
 } from "@/utils";
 import ProfileLoading from "@/components/public/profile/Loading";
 import ProfileFooter from "@/components/public/profile/ProfileFooter";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { theme } = useTheme();
   const supabase = createClient();
 
   const [user, setUser] = useState<Pengguna | null>(null);
@@ -227,74 +226,89 @@ export default function ProfilePage() {
     }
   };
 
-  const fetchUserMatches = async () => {
-    try {
-      if (!user?.nim) return;
+const fetchUserMatches = async () => {
+  try {
+    if (!user?.nim) return;
 
-      const { data: teamsData, error: teamsError } = await supabase
-        .from("anggota_tim")
-        .select("tim_id")
-        .eq("nim", user.nim);
+    const { data: teamsData, error: teamsError } = await supabase
+      .from("anggota_tim")
+      .select("tim_id")
+      .eq("nim", user.nim);
 
-      if (teamsError) throw teamsError;
+    if (teamsError) throw teamsError;
 
-      const teamIds =
-        (teamsData?.map((item) => item.tim_id).filter(Boolean) as string[]) ||
-        [];
+    const teamIds =
+      (teamsData?.map((item) => item.tim_id).filter(Boolean) as string[]) ||
+      [];
 
-      if (teamIds.length === 0) {
-        setUserMatches([]);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("pertandingan")
-        .select(
-          `
-          id,
-          status,
-          tanggal_pertandingan,
-          waktu_pertandingan,
-          skor_tim_a,
-          skor_tim_b,
-          tim_a:tim_a_id (nama),
-          tim_b:tim_b_id (nama),
-          pemenang_id,
-          acara:acara_id (nama),
-          round:round_id (nama)
-        `
-        )
-        .or(
-          `tim_a_id.in.(${teamIds.join(",")}),tim_b_id.in.(${teamIds.join(
-            ","
-          )})`
-        )
-        .order("tanggal_pertandingan", { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-
-      const typedData: Pertandingan[] = (data || []).map((item: any) => ({
-        id: item.id,
-        status: item.status,
-        tanggal_pertandingan: item.tanggal_pertandingan,
-        waktu_pertandingan: item.waktu_pertandingan,
-        skor_tim_a: item.skor_tim_a,
-        skor_tim_b: item.skor_tim_b,
-        tim_a: item.tim_a ? { nama: item.tim_a.nama } : undefined,
-        tim_b: item.tim_b ? { nama: item.tim_b.nama } : undefined,
-        acara: item.acara ? { nama: item.acara.nama } : undefined,
-        round: item.round ? { nama: item.round.nama } : undefined,
-        pemenang_id: item.pemenang_id,
-      }));
-
-      setUserMatches(typedData);
-    } catch (error) {
-      console.error("Error fetching user matches:", error);
-      toast.error("Gagal memuat data pertandingan");
+    if (teamIds.length === 0) {
+      setUserMatches([]);
+      return;
     }
-  };
 
+    // Interface untuk hasil query
+    interface PertandinganQueryResult {
+      id: string;
+      status: EnumStatusMatch;
+      tanggal_pertandingan: string | null;
+      waktu_pertandingan: string | null;
+      skor_tim_a: number | null;
+      skor_tim_b: number | null;
+      dibuat_pada: string;
+      pemenang_id: string | null;
+      tim_a: { nama: string }[];
+      tim_b: { nama: string }[];
+      acara: { nama: string }[];
+      round: { nama: string }[];
+    }
+
+    const { data, error } = await supabase
+      .from("pertandingan")
+      .select(
+        `
+        id,
+        status,
+        tanggal_pertandingan,
+        waktu_pertandingan,
+        skor_tim_a,
+        skor_tim_b,
+        dibuat_pada,
+        tim_a:tim_a_id (nama),
+        tim_b:tim_b_id (nama),
+        pemenang_id,
+        acara:acara_id (nama),
+        round:round_id (nama)
+      `
+      )
+      .or(
+        `tim_a_id.in.(${teamIds.join(",")}),tim_b_id.in.(${teamIds.join(",")})`
+      )
+      .order("tanggal_pertandingan", { ascending: false })
+      .limit(5);
+
+    if (error) throw error;
+
+    const typedData: Pertandingan[] = (data || []).map((item: PertandinganQueryResult) => ({
+      id: item.id,
+      status: item.status,
+      tanggal_pertandingan: item.tanggal_pertandingan || undefined,
+      waktu_pertandingan: item.waktu_pertandingan || undefined,
+      skor_tim_a: item.skor_tim_a || undefined,
+      skor_tim_b: item.skor_tim_b || undefined,
+      dibuat_pada: item.dibuat_pada,
+      tim_a: item.tim_a && item.tim_a[0] ? { nama: item.tim_a[0].nama } : undefined,
+      tim_b: item.tim_b && item.tim_b[0] ? { nama: item.tim_b[0].nama } : undefined,
+      acara: item.acara && item.acara[0] ? { nama: item.acara[0].nama } : undefined,
+      round: item.round && item.round[0] ? { nama: item.round[0].nama } : undefined,
+      pemenang_id: item.pemenang_id || undefined,
+    }));
+
+    setUserMatches(typedData);
+  } catch (error) {
+    console.error("Error fetching user matches:", error);
+    toast.error("Gagal memuat data pertandingan");
+  }
+};
   const handleSaveProfile = async () => {
     try {
       const {

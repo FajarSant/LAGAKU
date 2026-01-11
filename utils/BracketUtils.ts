@@ -6,24 +6,28 @@ export const getMatchStatusConfig = (status: string): MatchStatusConfig => {
     "selesai": {
       bg: "bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-900/30 dark:to-emerald-900/30",
       text: "text-green-700 dark:text-green-400",
-      border: "border-green-200 dark:border-green-800"
+      border: "border-green-200 dark:border-green-800",
+      label: "Selesai"
     },
     "berlangsung": {
       bg: "bg-gradient-to-r from-yellow-500/10 to-amber-500/10 dark:from-yellow-900/30 dark:to-amber-900/30",
       text: "text-yellow-700 dark:text-yellow-400",
-      border: "border-yellow-200 dark:border-yellow-800"
+      border: "border-yellow-200 dark:border-yellow-800",
+      label: "Berlangsung"
     },
     "dijadwalkan": {
       bg: "bg-gradient-to-r from-blue-500/10 to-sky-500/10 dark:from-blue-900/30 dark:to-sky-900/30",
       text: "text-blue-700 dark:text-blue-400",
-      border: "border-blue-200 dark:border-blue-800"
+      border: "border-blue-200 dark:border-blue-800",
+      label: "Dijadwalkan"
     }
   };
 
   return configs[status] || {
     bg: "bg-gray-100 dark:bg-gray-800",
     text: "text-gray-700 dark:text-gray-400",
-    border: "border-gray-200 dark:border-gray-700"
+    border: "border-gray-200 dark:border-gray-700",
+    label: "Tidak Diketahui"
   };
 };
 

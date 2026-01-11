@@ -24,10 +24,12 @@ export type {
   TeamRegistrationData,
   PlayerSearchResult,
   SupabaseScheduleResult,
+  SupabasePertandingan,
   ScheduleStats,
   JadwalFilter,
   EnumStatusMatch,
-  EnumStatusTim
+  EnumStatusTim,
+  
 } from '@/types/type';
 
 export {

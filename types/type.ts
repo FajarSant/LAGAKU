@@ -176,7 +176,7 @@ export interface Pertandingan {
   lokasi_lapangan?: string;
   url_lokasi_maps?: string;
   durasi_pertandingan?: number;
-  dibuat_pada: string;
+  dibuat_pada?: string;
 }
 
 export type PertandinganWithRelations = {
@@ -210,6 +210,7 @@ export type PertandinganFromSupabase = {
   acara: Acara[];
   dibuat_pada: string;
 };
+
 
 export interface SupabasePertandingan {
   id: string;
