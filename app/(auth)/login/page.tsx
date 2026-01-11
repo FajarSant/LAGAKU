@@ -30,7 +30,6 @@ export default function LoginPage() {
   });
 
   async function ensureUserProfile(user: any) {
-    // Cek apakah row pengguna sudah ada
     const { data: existingProfile } = await supabase
       .from("pengguna")
       .select("*")
@@ -39,7 +38,6 @@ export default function LoginPage() {
 
     if (existingProfile) return existingProfile;
 
-    // Jika belum ada, buat row baru
     const { data: created, error: createError } = await supabase
       .from("pengguna")
       .insert({
@@ -61,7 +59,6 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Login dengan email & password
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
@@ -72,10 +69,8 @@ export default function LoginPage() {
       if (!data?.user) throw new Error("Gagal mendapatkan data pengguna.");
       const user = data.user;
 
-      // Pastikan row di tabel "pengguna" ada
       const profile = await ensureUserProfile(user);
 
-      // Redirect sesuai status verifikasi
       if (!profile.is_verified) {
         router.push("/konfirmasi-identitas");
       } else {
@@ -98,25 +93,30 @@ export default function LoginPage() {
       });
 
       if (error) throw error;
-
     } catch (err: any) {
       alert(err.message);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-      <Card className="w-full max-w-md shadow-lg border rounded-2xl p-6">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <Card className="w-full max-w-md shadow-lg border rounded-2xl p-6 dark:bg-gray-800 dark:border-gray-700">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-center">Masuk</h1>
+          <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+            Masuk
+          </h1>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <Input placeholder="Email" {...form.register("email")} />
+              <Input
+                placeholder="Email"
+                {...form.register("email")}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+              />
               {form.formState.errors.email && (
-                <p className="text-red-500 text-sm">
+                <p className="text-red-500 dark:text-red-400 text-sm">
                   {form.formState.errors.email.message}
                 </p>
               )}
@@ -127,43 +127,50 @@ export default function LoginPage() {
                 type="password"
                 placeholder="Password"
                 {...form.register("password")}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
               />
               {form.formState.errors.password && (
-                <p className="text-red-500 text-sm">
+                <p className="text-red-500 dark:text-red-400 text-sm">
                   {form.formState.errors.password.message}
                 </p>
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+              disabled={loading}
+            >
               {loading ? "Memproses..." : "Masuk"}
             </Button>
           </form>
 
           {/* Pembatas */}
           <div className="flex items-center my-4">
-            <div className="flex-1 h-px bg-gray-300" />
-            <span className="px-2 text-sm text-gray-500">atau</span>
-            <div className="flex-1 h-px bg-gray-300" />
+            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+            <span className="px-2 text-sm text-gray-500 dark:text-gray-400">
+              atau
+            </span>
+            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
           </div>
 
           {/* Login dengan Google */}
           <Button
             variant="outline"
-            className="w-full flex items-center justify-center gap-3 border-gray-300 hover:bg-gray-100"
+            className="w-full flex items-center justify-center gap-3 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={loginWithGoogle}
           >
             <FcGoogle className="text-xl" />
-            <span className="text-gray-700 font-medium">
+            <span className="text-gray-700 dark:text-gray-300 font-medium">
               Masuk dengan Google
             </span>
           </Button>
 
-          <p className="text-center mt-4 text-sm">
+          <p className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
             Belum punya akun?
             <Link
               href="/register"
-              className="text-blue-600 ml-1 hover:underline"
+              className="text-blue-600 dark:text-blue-400 ml-1 hover:underline"
             >
               Daftar
             </Link>
