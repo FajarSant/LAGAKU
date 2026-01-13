@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, MapPin, Eye } from "lucide-react";
 import StatusBadge from "./StatusBadge";
-import { SupabasePertandingan } from "@/app/(public)/jadwal-pertandingan/page";
+import { SupabasePertandingan } from "@/app/(public)/schadule/page";
 import { formatDate, formatTime } from "@/utils/schedule-utils";
 import { Button } from "@/components/ui/button";
 

@@ -53,6 +53,11 @@ export interface Acara {
   dibuat_pada: string;
   tanggal_mulai?: string | null;
   tanggal_selesai?: string | null;
+   _count?: {
+    tim?: number;
+    pertandingan?: number;
+    round?: number;
+  };
 }
 
 export interface AcaraSimple {

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTheme } from "next-themes";
 
 // Schema validasi form
 const konfirmasiSchema = z.object({
@@ -27,6 +28,7 @@ type KonfirmasiForm = z.infer<typeof konfirmasiSchema>;
 export default function KonfirmasiIdentitasPage() {
   const supabase = createClient();
   const router = useRouter();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -101,76 +103,147 @@ export default function KonfirmasiIdentitasPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-      <Card className="w-full max-w-lg shadow-lg rounded-2xl p-6">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <Card className="w-full max-w-lg shadow-lg rounded-2xl p-6 dark:bg-gray-800 dark:border-gray-700">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-center">Konfirmasi Identitas</h1>
-          <p className="text-center text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+            Konfirmasi Identitas
+          </h1>
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-1">
             Lengkapi data identitas untuk mengakses sistem
           </p>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* NIM */}
             <div>
-              <Input placeholder="NIM" {...form.register("nim")} />
+              <Input 
+                placeholder="NIM" 
+                {...form.register("nim")}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+              />
               {form.formState.errors.nim && (
-                <p className="text-red-500 text-sm">{form.formState.errors.nim.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm">
+                  {form.formState.errors.nim.message}
+                </p>
               )}
             </div>
 
+            {/* Fakultas */}
             <div>
-              <Input placeholder="Fakultas" {...form.register("fakultas")} />
+              <Input 
+                placeholder="Fakultas" 
+                {...form.register("fakultas")}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+              />
               {form.formState.errors.fakultas && (
-                <p className="text-red-500 text-sm">{form.formState.errors.fakultas.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm">
+                  {form.formState.errors.fakultas.message}
+                </p>
               )}
             </div>
 
+            {/* Program Studi */}
             <div>
-              <Input placeholder="Program Studi" {...form.register("program_studi")} />
+              <Input 
+                placeholder="Program Studi" 
+                {...form.register("program_studi")}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+              />
               {form.formState.errors.program_studi && (
-                <p className="text-red-500 text-sm">{form.formState.errors.program_studi.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm">
+                  {form.formState.errors.program_studi.message}
+                </p>
               )}
             </div>
 
+            {/* Jenis Kelamin */}
             <div>
-              <Select {...form.register("jenis_kelamin")}>
-                <SelectTrigger>
+              <Select 
+                {...form.register("jenis_kelamin")}
+                defaultValue="L"
+              >
+                <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                   <SelectValue placeholder="Jenis Kelamin" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="L">Laki-laki</SelectItem>
-                  <SelectItem value="P">Perempuan</SelectItem>
+                <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
+                  <SelectItem 
+                    value="L"
+                    className="dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:bg-gray-600"
+                  >
+                    Laki-laki
+                  </SelectItem>
+                  <SelectItem 
+                    value="P"
+                    className="dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:bg-gray-600"
+                  >
+                    Perempuan
+                  </SelectItem>
                 </SelectContent>
               </Select>
               {form.formState.errors.jenis_kelamin && (
-                <p className="text-red-500 text-sm">{form.formState.errors.jenis_kelamin.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm">
+                  {form.formState.errors.jenis_kelamin.message}
+                </p>
               )}
             </div>
 
+            {/* Tanggal Lahir */}
             <div>
-              <Input type="date" {...form.register("tanggal_lahir")} />
+              <Input 
+                type="date" 
+                {...form.register("tanggal_lahir")}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
               {form.formState.errors.tanggal_lahir && (
-                <p className="text-red-500 text-sm">{form.formState.errors.tanggal_lahir.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm">
+                  {form.formState.errors.tanggal_lahir.message}
+                </p>
               )}
             </div>
 
+            {/* Alamat */}
             <div>
-              <Input placeholder="Alamat" {...form.register("alamat")} />
+              <Input 
+                placeholder="Alamat" 
+                {...form.register("alamat")}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+              />
               {form.formState.errors.alamat && (
-                <p className="text-red-500 text-sm">{form.formState.errors.alamat.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm">
+                  {form.formState.errors.alamat.message}
+                </p>
               )}
             </div>
 
+            {/* Nomor HP */}
             <div>
-              <Input placeholder="Nomor HP" {...form.register("nomor_hp")} />
+              <Input 
+                placeholder="Nomor HP" 
+                {...form.register("nomor_hp")}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+              />
               {form.formState.errors.nomor_hp && (
-                <p className="text-red-500 text-sm">{form.formState.errors.nomor_hp.message}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm">
+                  {form.formState.errors.nomor_hp.message}
+                </p>
               )}
             </div>
 
-            <Button className="w-full" disabled={loading}>
-              {loading ? "Memproses..." : "Simpan & Lanjutkan"}
+            {/* Submit Button */}
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600" 
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent animate-spin rounded-full" />
+                  Memproses...
+                </div>
+              ) : (
+                "Simpan & Lanjutkan"
+              )}
             </Button>
           </form>
         </CardContent>

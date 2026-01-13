@@ -122,7 +122,7 @@ export default function Navigation() {
   // Navigation items untuk desktop menu
   const desktopNavItems = [
     { href: "/", label: "Home", icon: Home },
-    { href: "/jadwal", label: "Jadwal", icon: Calendar },
+    { href: "/schadule", label: "Jadwal", icon: Calendar },
     { href: "/match", label: "Pertandingan", icon: Trophy },
     { href: "/teams", label: "Tim", icon: Users },
     { href: "/tournaments", label: "Turnamen", icon: Trophy },

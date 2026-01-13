@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trophy } from "lucide-react";
 import { EnumStatusMatch } from "@/utils";
-import { SupabasePertandingan } from "@/app/(public)/jadwal-pertandingan/page";
+import { SupabasePertandingan } from "@/app/(public)/schadule/page";
 import { formatDate, formatTime, getStatusConfig } from "@/utils/schedule-utils";
 
 interface MatchDetailsDialogProps {

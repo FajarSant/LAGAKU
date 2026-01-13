@@ -1,4 +1,4 @@
-import { SupabasePertandingan } from "@/app/(public)/jadwal-pertandingan/page";
+import { SupabasePertandingan } from "@/app/(public)/schadule/page";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarDays, Clock, Calendar, Trophy } from "lucide-react";

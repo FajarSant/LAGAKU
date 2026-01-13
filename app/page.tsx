@@ -25,12 +25,11 @@ import {
   Target,
   Sparkles,
   ArrowRight,
-  Flame,
-  Clock,
-  CalendarCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Footer from "@/components/public/Footer";
+import Link from "next/link";
 
 export default function HomePage() {
   const [selectedStatus, setSelectedStatus] = useState("berlangsung");
@@ -225,21 +224,25 @@ export default function HomePage() {
                     </CardDescription>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Button
-                      size="lg"
-                      className="px-6 py-5 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg group"
-                    >
-                      <Trophy className="mr-2 w-4 h-4 group-hover:animate-bounce" />
-                      Daftar Turnamen
-                      <ArrowRight className="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="px-6 py-5 border-2 border-gray-300 dark:border-gray-600"
-                    >
-                      Lihat Panduan
-                    </Button>
+                    <Link href="/tournaments" passHref>
+                      <Button
+                        size="lg"
+                        className="px-6 py-5 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg group"
+                      >
+                        <Trophy className="mr-2 w-4 h-4 group-hover:animate-bounce" />
+                        Daftar Turnamen
+                        <ArrowRight className="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                      </Button>
+                    </Link>
+                    <Link href="/guide" passHref>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="px-6 py-5 border-2 border-gray-300 dark:border-gray-600"
+                      >
+                        Lihat Panduan
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
@@ -323,78 +326,7 @@ export default function HomePage() {
       </div>
 
       <FeaturesSection />
-
-      {/* Footer */}
-      <footer className="border-t py-10 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/95 mt-12">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    SportConnect
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Competition Hub
-                  </p>
-                </div>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Platform turnamen olahraga terdepan untuk kompetisi yang adil
-                dan transparan dengan teknologi modern.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-4 text-gray-900 dark:text-white">
-                Navigasi
-              </h4>
-              <ul className="space-y-2">
-                {["Beranda", "Turnamen", "Tim", "Jadwal"].map((item) => (
-                  <li key={item}>
-                    <a
-                      href="#"
-                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm block py-1"
-                    >
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-4 text-gray-900 dark:text-white">
-                Kontak
-              </h4>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-400 text-sm">
-                <li className="flex items-start py-1">
-                  <span className="font-medium mr-2 min-w-16">Email:</span>
-                  support@sportconnect.id
-                </li>
-                <li className="flex items-start py-1">
-                  <span className="font-medium mr-2 min-w-16">Telepon:</span>
-                  (021) 1234-5678
-                </li>
-                <li className="flex items-start py-1">
-                  <span className="font-medium mr-2 min-w-16">Alamat:</span>
-                  Jakarta, Indonesia
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              © {new Date().getFullYear()} SportConnect. All rights reserved. |
-              Platform Turnamen Modern
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
