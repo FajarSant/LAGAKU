@@ -91,13 +91,29 @@ export type AcaraFromDB = {
 export interface Tim {
   id: string;
   nama: string;
-  status: string;
-  acara_id?: string;
+  status: EnumStatusTim;
+  acara_id: string;
+  jurusan?: string;
+  angkatan?: string;
+  nomor_hp?: string;
+  jumlah_pemain?: number;
+  dibuat_pada?: string;
   acara?: {
     nama: string;
   };
 }
-
+export interface TeamWithDetails extends Tim {
+  acara?: {
+    id: string;
+    nama: string;
+    deskripsi?: string;
+  };
+  anggota_tim?: AnggotaTim[];
+  _count?: {
+    anggota_tim?: number;
+    pertandingan?: number;
+  };
+}
 export interface TimSimple {
   id: string;
   nama: string;

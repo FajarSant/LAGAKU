@@ -20,6 +20,7 @@ export type {
   PertandinganWithRelations,
   MatchCountResult,
   TeamQueryResult,
+  TeamWithDetails,
   TeamMemberForm,
   TeamRegistrationData,
   PlayerSearchResult,
