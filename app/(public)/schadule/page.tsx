@@ -9,6 +9,7 @@ import ScheduleFilters from "@/components/public/jadwal-pertandingan/ScheduleFil
 import ScheduleTable from "@/components/public/jadwal-pertandingan/ScheduleTable";
 import ScheduleCalendar from "@/components/public/jadwal-pertandingan/ScheduleCalendar";
 import MatchDetailsDialog from "@/components/public/jadwal-pertandingan/MatchDetailsDialog";
+import Navigation from "@/components/navigation/navigation";
 
 interface Tim {
   id: string;
@@ -241,6 +242,7 @@ export default function SchedulePage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950">
+      <Navigation />
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <ScheduleHeader
