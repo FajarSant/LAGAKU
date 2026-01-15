@@ -92,7 +92,7 @@ export default function TimPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Data Tim</h1>
-        <Button onClick={() => router.push("/admin/tim/tambah")}>
+        <Button onClick={() => router.push("/tim/tambah")}>
           Tambah Tim
         </Button>
       </div>
@@ -110,7 +110,7 @@ export default function TimPage() {
           data={timList}
           onDelete={handleDelete}
           onDetail={handleDetail}
-          onEdit={(tim) => router.push(`/admin/tim/edit/${tim.id}`)}
+          onEdit={(tim) => router.push(`/tim/edit/${tim.id}`)}
         />
       )}
 

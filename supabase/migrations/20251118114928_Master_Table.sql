@@ -66,9 +66,22 @@ create table if not exists public.acara (
     id uuid primary key default gen_random_uuid(),
     nama text not null unique,
     deskripsi text,
+    lokasi_lapangan text,
+    url_lokasi_maps text,
+    tanggal_mulai_pertandingan timestamptz not null,
+    tanggal_selesai_pertandingan timestamptz not null,
+    deadline_pendaftaran timestamptz not null,
+
     dibuat_oleh uuid references public.pengguna(id) on delete set null,
-    dibuat_pada timestamptz default now()
+    dibuat_pada timestamptz default now(),
+
+    constraint cek_tanggal_pertandingan
+        check (tanggal_mulai_pertandingan < tanggal_selesai_pertandingan),
+
+    constraint cek_deadline_pendaftaran
+        check (deadline_pendaftaran <= tanggal_mulai_pertandingan)
 );
+
 
 -- =======================================================
 -- TABLE: tim
