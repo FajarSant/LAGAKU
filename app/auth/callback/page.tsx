@@ -82,19 +82,19 @@ export default function AuthCallbackPage() {
 
         if (error || !user) {
           console.error("Auth error:", error);
-          return router.replace("/login");
+          return router.replace("/auth/login");
         }
 
         const profile = await ensureUserProfile(user);
 
         if (!profile.is_verified) {
-          router.replace("/konfirmasi-identitas");
+          router.replace("/auth/konfirmasi-identitas");
         } else {
           router.replace("/");
         }
       } catch (err) {
         console.error("Login callback error:", err);
-        router.replace("/login");
+        router.replace("/auth/login");
       }
     };
 

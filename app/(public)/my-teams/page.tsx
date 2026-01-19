@@ -7,18 +7,17 @@ import Footer from "@/components/public/Footer";
 import { Acara, Pengguna, TeamWithDetails } from "@/utils";
 import HeroSection from "@/components/public/teams/HeroSection";
 import TeamList from "@/components/public/teams/TeamList";
-import TournamentsJoined from "@/components/public/teams/TournamentsJoined";
+import CreateTeamDialog from "@/components/public/teams/CreateTeamDialog";
 
 export default function MyTeamsPage() {
   const [teams, setTeams] = useState<TeamWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<Pengguna | null>(null);
-  const [tournaments, setTournaments] = useState<Acara[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   useEffect(() => {
     fetchUserAndTeams();
-    fetchAvailableTournaments();
   }, []);
 
   const fetchUserAndTeams = async () => {
@@ -56,28 +55,45 @@ export default function MyTeamsPage() {
       }
 
       if (!userProfile) {
+        // Jika tidak ada di pengguna, coba dari profiles
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
+
         const defaultProfile: Pengguna = {
           id: authUser.id,
-          nama:
-            authUser.user_metadata?.full_name ||
-            authUser.email?.split("@")[0] ||
-            "User",
+          nama: profileData?.full_name ||
+                authUser.user_metadata?.full_name ||
+                authUser.email?.split("@")[0] ||
+                "User",
           email: authUser.email || "",
           peran: "mahasiswa",
           is_verified: false,
           dibuat_pada: new Date().toISOString(),
+          nim: profileData?.nim,
+          jurusan: profileData?.jurusan,
+          angkatan: profileData?.angkatan,
+          nomor_hp: profileData?.nomor_hp,
+          avatar_url: profileData?.avatar_url,
         };
         setUser(defaultProfile);
       } else {
-        setUser(userProfile);
+        // Tambahkan field opsional jika tidak ada
+        const enhancedProfile: Pengguna = {
+          ...userProfile,
+          nim: userProfile.nim || undefined,
+          jurusan: userProfile.jurusan || undefined,
+          angkatan: userProfile.angkatan || undefined,
+          nomor_hp: userProfile.nomor_hp || undefined,
+        };
+        setUser(enhancedProfile);
       }
 
       // Cari tim yang berisi user berdasarkan NIM atau nama
-      const currentUserName =
-        userProfile?.nama?.toLowerCase() ||
-        authUser.email?.split("@")[0].toLowerCase() ||
-        "";
-      const currentUserNIM = userProfile?.nim || "";
+      const currentUserName = user?.nama?.toLowerCase() || "";
+      const currentUserNIM = user?.nim || "";
 
       let allTeamData: any[] = [];
 
@@ -214,22 +230,12 @@ export default function MyTeamsPage() {
     }
   };
 
-  const fetchAvailableTournaments = async () => {
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("acara")
-        .select("*")
-        .order("dibuat_pada", { ascending: false });
-
-      if (error) throw error;
-      setTournaments(data || []);
-    } catch (error) {
-      console.error("Error fetching tournaments:", error);
-    }
+  const handleRefresh = () => {
+    fetchUserAndTeams();
   };
 
-  const handleRefresh = () => {
+  const handleTeamCreated = () => {
+    setShowCreateDialog(false);
     fetchUserAndTeams();
   };
 
@@ -242,6 +248,7 @@ export default function MyTeamsPage() {
         loading={loading}
         error={error}
         onRefresh={handleRefresh}
+        onCreateTeam={() => setShowCreateDialog(true)}
       />
 
       {/* Main Content */}
@@ -251,10 +258,19 @@ export default function MyTeamsPage() {
           loading={loading}
           onRefresh={handleRefresh}
           error={error}
+          onCreateTeam={() => setShowCreateDialog(true)}
         />
-
-        <TournamentsJoined tournaments={tournaments} teams={teams} />
       </div>
+
+      {/* Create Team Dialog */}
+      {user && (
+        <CreateTeamDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          onTeamCreated={handleTeamCreated}
+          user={user}
+        />
+      )}
 
       <Footer />
     </div>

@@ -72,7 +72,7 @@ export default function LoginPage() {
       const profile = await ensureUserProfile(user);
 
       if (!profile.is_verified) {
-        router.push("/konfirmasi-identitas");
+        router.push("/auth/konfirmasi-identitas");
       } else {
         router.push("/");
       }
@@ -88,7 +88,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -169,7 +169,7 @@ export default function LoginPage() {
           <p className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
             Belum punya akun?
             <Link
-              href="/register"
+              href="/auth/register"
               className="text-blue-600 dark:text-blue-400 ml-1 hover:underline"
             >
               Daftar

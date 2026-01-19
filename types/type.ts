@@ -16,6 +16,8 @@ export interface Pengguna {
   avatar_url?: string;
   peran: EnumPeran;
   nim?: string;
+  jurusan?: string;
+  angkatan?: string;
   fakultas?: string;
   program_studi?: string;
   jenis_kelamin?: EnumJenisKelamin;
@@ -53,7 +55,12 @@ export interface Acara {
   dibuat_pada: string;
   tanggal_mulai?: string | null;
   tanggal_selesai?: string | null;
-   _count?: {
+  deadline_pendaftaran?: string | null; 
+  dibuat_oleh?: string | null;
+  updated_at?: string | null;
+  jumlah_tim?: number;
+  is_registration_open?: boolean;
+  _count?: {
     tim?: number;
     pertandingan?: number;
     round?: number;
@@ -102,6 +109,54 @@ export interface Tim {
     nama: string;
   };
 }
+export interface TeamMemberForm {
+  nama_pemain: string;
+  nim: string;
+}
+
+export interface FormData {
+  nama: string;
+  jurusan: string;
+  angkatan: string;
+  nomor_hp: string;
+  anggota: TeamMemberForm[];
+}
+
+export interface TournamentDetails {
+  id: string;
+  nama: string;
+  deskripsi: string | null;
+  lokasi_lapangan: string | null;
+  url_lokasi_maps: string | null;
+  tanggal_mulai_pertandingan: string | null;
+  tanggal_selesai_pertandingan: string | null;
+  deadline_pendaftaran: string | null;
+  dibuat_oleh: string | null;
+  dibuat_pada: string;
+  jumlah_tim?: number;
+  is_registration_open: boolean;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name?: string;
+  nim?: string;
+  jurusan?: string;
+  angkatan?: string;
+  nomor_hp?: string;
+  avatar_url?: string;
+}
+
+export interface UserTeam {
+  id: string;
+  nama: string;
+  jurusan: string;
+  angkatan: string;
+  nomor_hp: string;
+  anggota: TeamMemberForm[];
+}
+
 export interface TeamWithDetails extends Tim {
   acara?: {
     id: string;
@@ -231,7 +286,6 @@ export type PertandinganFromSupabase = {
   acara: Acara[];
   dibuat_pada: string;
 };
-
 
 export interface SupabasePertandingan {
   id: string;

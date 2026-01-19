@@ -10,7 +10,8 @@ import {
   UserPlus,
   Zap,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  PlusCircle
 } from "lucide-react";
 import Link from "next/link";
 import { TeamWithDetails } from "@/utils";
@@ -21,9 +22,10 @@ interface HeroSectionProps {
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
+  onCreateTeam: () => void;
 }
 
-export default function HeroSection({ teams, loading, error, onRefresh }: HeroSectionProps) {
+export default function HeroSection({ teams, loading, error, onRefresh, onCreateTeam }: HeroSectionProps) {
   // Hitung statistik termasuk turnamen yang diikuti
   const tournamentIds = new Set(teams.map(team => team.acara_id));
   const stats = {
@@ -91,6 +93,30 @@ export default function HeroSection({ teams, loading, error, onRefresh }: HeroSe
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
               Kelola dan pantau tim Anda di berbagai turnamen. Lacak performa, anggota tim, dan pertandingan dalam satu tempat.
             </p>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 justify-center mb-8">
+              <Button
+                onClick={onCreateTeam}
+                size="lg"
+                className="px-6 py-5 bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg group"
+              >
+                <PlusCircle className="mr-2 w-5 h-5 group-hover:rotate-90 transition-transform" />
+                Buat Tim Baru
+              </Button>
+              
+              <Link href="/tournaments" passHref>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="px-6 py-5 border-2 group"
+                >
+                  <Trophy className="mr-2 w-5 h-5 group-hover:animate-bounce" />
+                  Lihat Turnamen
+                  <ArrowRight className="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Stats Grid */}
@@ -137,32 +163,34 @@ export default function HeroSection({ teams, loading, error, onRefresh }: HeroSe
             />
           </div>
 
-          {/* CTA Section */}
-          <Card className="border-0 shadow-xl bg-linear-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm">
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                <div>
-                  <CardTitle className="text-xl md:text-2xl mb-2 flex items-center">
-                    <Sparkles className="w-5 h-5 mr-2 text-blue-500" />
-                    Ingin Bergabung dengan Tim Lain?
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-300">
-                    Jelajahi turnamen yang sedang berlangsung dan temukan tim yang sesuai dengan kemampuan Anda.
-                  </CardDescription>
+          {/* Quick Stats Info */}
+          {stats.totalTeams === 0 && !loading && (
+            <Card className="border-0 shadow-xl bg-linear-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm mb-8">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                  <div>
+                    <CardTitle className="text-xl md:text-2xl mb-2 flex items-center">
+                      <Sparkles className="w-5 h-5 mr-2 text-blue-500" />
+                      Belum Punya Tim?
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 dark:text-gray-300">
+                      Buat tim pertama Anda dan ikuti turnamen seru! Atau bergabung dengan tim yang sudah ada.
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={onCreateTeam}
+                      size="lg"
+                      className="px-6 py-5 bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg"
+                    >
+                      <PlusCircle className="mr-2 w-5 h-5" />
+                      Buat Tim
+                    </Button>
+                  </div>
                 </div>
-                <Link href="/tournaments" passHref>
-                  <Button
-                    size="lg"
-                    className="px-6 py-5 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg group"
-                  >
-                    <Trophy className="mr-2 w-4 h-4 group-hover:animate-bounce" />
-                    Jelajahi Turnamen
-                    <ArrowRight className="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

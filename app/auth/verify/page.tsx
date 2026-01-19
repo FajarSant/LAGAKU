@@ -45,7 +45,7 @@ export default function ConfirmPage() {
           </Button>
 
           {/* Back to login */}
-          <Link href="/login" className="block">
+          <Link href="/auth/login" className="block">
             <Button
               variant="ghost"
               className="w-full flex gap-2 items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"

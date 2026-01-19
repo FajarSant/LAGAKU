@@ -1,50 +1,44 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
-import EmptyState from "./EmptyState";
-import TeamCard from "./TeamCard";
+import { PlusCircle, RefreshCw, Users } from "lucide-react";
 import { TeamWithDetails } from "@/utils";
+import TeamCard from "./TeamCard";
+import EmptyState from "./EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TeamListProps {
   teams: TeamWithDetails[];
   loading: boolean;
   onRefresh: () => void;
-  error?: string | null;
+  error: string | null;
+  onCreateTeam: () => void;
 }
 
-export default function TeamList({ teams, loading, onRefresh, error }: TeamListProps) {
-  const [activeTab, setActiveTab] = useState("all");
-
-  const filteredTeams = teams.filter(team => {
-    if (activeTab === "all") return true;
-    if (activeTab === "active") return team.status === "aktif";
-    if (activeTab === "eliminated") return team.status === "gugur";
-    return true;
-  });
-
+export default function TeamList({ teams, loading, error, onRefresh, onCreateTeam }: TeamListProps) {
   if (loading) {
     return (
-      <Card className="border border-gray-200 dark:border-gray-800 shadow-lg mb-8">
-        <CardHeader className="pb-4 my-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <Card className="mb-8">
+        <CardHeader>
+          <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                Daftar Tim
-              </CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-300">
-                Memuat data tim...
-              </CardDescription>
+              <Skeleton className="h-6 w-48 mb-2" />
+              <Skeleton className="h-4 w-64" />
             </div>
+            <Skeleton className="h-10 w-24" />
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-64 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg" />
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-6 w-3/4 mb-4" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+              </Card>
             ))}
           </div>
         </CardContent>
@@ -52,77 +46,79 @@ export default function TeamList({ teams, loading, onRefresh, error }: TeamListP
     );
   }
 
-  if (error) {
-    return (
-      <Card className="border border-gray-200 dark:border-gray-800 shadow-lg mb-8">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center text-red-600 dark:text-red-400">
-            <AlertCircle className="w-6 h-6 mr-2" />
-            <p>{error}</p>
-            <Button variant="outline" className="ml-4" onClick={onRefresh}>
+  return (
+    <Card className="mb-8 border border-gray-200 dark:border-gray-800 shadow-lg">
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Users className="w-5 h-5" />
+              Daftar Tim Saya
+            </CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-300">
+              Kelola semua tim yang Anda ikuti atau buat ({teams.length} tim)
+            </CardDescription>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRefresh}
+              className="gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+            
+            <Button
+              onClick={onCreateTeam}
+              size="sm"
+              className="gap-2 bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Buat Tim
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        {error ? (
+          <div className="text-center py-8">
+            <div className="text-red-600 dark:text-red-400 mb-4">{error}</div>
+            <Button onClick={onRefresh} variant="outline">
               Coba Lagi
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="border border-gray-200 dark:border-gray-800 shadow-lg mb-8">
-      <CardHeader className="pb-4 my-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-              Daftar Tim
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-300">
-              Kelola tim Anda dengan filter status
-            </CardDescription>
-          </div>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-gray-100 dark:bg-gray-800">
-              <TabsTrigger
-                value="all"
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-              >
-                Semua
-              </TabsTrigger>
-              <TabsTrigger
-                value="active"
-                className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
-              >
-                Aktif
-              </TabsTrigger>
-              <TabsTrigger
-                value="eliminated"
-                className="data-[state=active]:bg-red-500 data-[state=active]:text-white"
-              >
-                Gugur
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      </CardHeader>
-
-      <CardContent className="pt-0">
-        <div className="mt-0">
-          {filteredTeams.length === 0 ? (
-            <EmptyState 
-              title={activeTab === "all" ? "Belum ada tim" : `Tidak ada tim ${activeTab === "active" ? "aktif" : "gugur"}`}
-              description={activeTab === "all" 
-                ? "Anda belum tergabung dalam tim apa pun." 
-                : `Tidak ada tim dengan status ${activeTab === "active" ? "aktif" : "gugur"}.`
-              }
+        ) : teams.length === 0 ? (
+          <div className="space-y-6">
+            <EmptyState
+              title="Belum Punya Tim"
+              description="Anda belum menjadi anggota tim atau membuat tim sendiri."
             />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTeams.map(team => (
-                <TeamCard key={team.id} team={team} onRefresh={onRefresh} />
-              ))}
+            
+            <div className="text-center">
+              <Button
+                onClick={onCreateTeam}
+                size="lg"
+                className="px-8 py-6 bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg"
+              >
+                <PlusCircle className="mr-2 w-5 h-5" />
+                Buat Tim Pertama Anda
+              </Button>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                Buat tim untuk ikut turnamen atau tunggu undangan dari tim lain
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {teams.map((team) => (
+              <TeamCard key={team.id} team={team} onRefresh={onRefresh} />
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
