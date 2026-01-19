@@ -51,26 +51,31 @@ export default function TournamentRegisterPage() {
 
       // Ambil data user
       const { data: profile } = await supabase
-        .from("profiles")
+        .from("pengguna")
         .select("*")
         .eq("id", session.user.id)
         .single();
 
       if (profile) {
-        setUserProfile({
+        const userProfileData: UserProfile = {
           id: profile.id,
           email: profile.email,
-          full_name: profile.full_name,
+          full_name: profile.nama || profile.email?.split('@')[0] || 'User',
           nim: profile.nim,
           jurusan: profile.jurusan,
           angkatan: profile.angkatan,
           nomor_hp: profile.nomor_hp,
           avatar_url: profile.avatar_url,
-        });
+        };
+        
+        setUserProfile(userProfileData);
+        
+        // Setelah userProfile di-set, ambil tim user
+        await fetchUserTeams(userProfileData);
+      } else {
+        // Jika profile tidak ditemukan, set teams kosong
+        setUserTeams([]);
       }
-
-      // Ambil tim user - pendekatan lebih sederhana
-      await fetchUserTeams(session.user.id);
 
       // Ambil data turnamen
       await fetchTournamentDetails();
@@ -83,107 +88,146 @@ export default function TournamentRegisterPage() {
     }
   };
 
-  const fetchUserTeams = async (userId: string) => {
+  // Fungsi untuk mengambil tim berdasarkan user yang login
+  const fetchUserTeams = async (profile: UserProfile) => {
     try {
-      // Query sederhana tanpa nested relationship yang kompleks
-      const { data: teams, error } = await supabase
-        .from("tim")
-        .select("id, nama, jurusan, angkatan, nomor_hp, acara_id")
-        .eq("created_by", userId);
+      console.log("Fetching teams for user:", profile);
+      
+      // Versi 1: Cari berdasarkan NIM dan nama
+      const { data: anggotaByNIM, error: errorByNIM } = await supabase
+        .from("anggota_tim")
+        .select("tim_id")
+        .eq("nim", profile.nim)
+        .neq("nim", "")
+        .neq("nim", null);
 
-      if (error) {
-        console.error("Error fetching teams:", error);
+      const { data: anggotaByNama, error: errorByNama } = await supabase
+        .from("anggota_tim")
+        .select("tim_id")
+        .ilike("nama_pemain", `%${profile.full_name}%`);
+
+      const allTimIds = new Set<string>();
+      
+      // Tambahkan tim_id dari hasil query NIM
+      if (anggotaByNIM && !errorByNIM) {
+        anggotaByNIM.forEach(item => allTimIds.add(item.tim_id));
+      }
+      
+      // Tambahkan tim_id dari hasil query nama
+      if (anggotaByNama && !errorByNama) {
+        anggotaByNama.forEach(item => allTimIds.add(item.tim_id));
+      }
+
+      const timIds = Array.from(allTimIds);
+      
+      console.log("Found team IDs:", timIds);
+
+      if (timIds.length === 0) {
+        setUserTeams([]);
         return;
       }
 
-      // Jika ada tim, ambil data anggotanya satu per satu
-      const userTeamsWithMembers: UserTeam[] = [];
-      
-      for (const team of teams || []) {
-        // Ambil anggota tim
-        const { data: anggota, error: anggotaError } = await supabase
+      // Ambil detail tim dari setiap tim_id
+      const { data: teamsData, error: teamsError } = await supabase
+        .from("tim")
+        .select("*")
+        .in("id", timIds);
+
+      if (teamsError) {
+        console.error("Error fetching teams:", teamsError);
+        setUserTeams([]);
+        return;
+      }
+
+      console.log("Teams data:", teamsData);
+
+      // Untuk setiap tim, ambil anggota
+      const teamsWithMembers: UserTeam[] = [];
+
+      for (const team of teamsData || []) {
+        const { data: anggotaData } = await supabase
           .from("anggota_tim")
           .select("nama_pemain, nim")
           .eq("tim_id", team.id);
 
-        if (anggotaError) {
-          console.error("Error fetching team members:", anggotaError);
-          continue;
-        }
-
-        userTeamsWithMembers.push({
+        teamsWithMembers.push({
           id: team.id,
           nama: team.nama,
           jurusan: team.jurusan || "",
           angkatan: team.angkatan || "",
           nomor_hp: team.nomor_hp || "",
-          anggota: (anggota || []).map(a => ({
+          anggota: (anggotaData || []).map(a => ({
             nama_pemain: a.nama_pemain,
             nim: a.nim || ""
           }))
         });
       }
 
-      setUserTeams(userTeamsWithMembers);
+      console.log("Final teams with members:", teamsWithMembers);
+      setUserTeams(teamsWithMembers);
+
     } catch (error) {
-      console.error("Error fetching user teams:", error);
+      console.error("Error in fetchUserTeams:", error);
+      setUserTeams([]);
     }
   };
 
-  // ALTERNATIF: Query yang lebih sederhana tapi mungkin kurang efisien
-  const fetchUserTeamsAlternative = async (userId: string) => {
+  // ALTERNATIF: Versi lebih sederhana - ambil semua tim dan filter di frontend
+  const fetchAllTeamsAndFilter = async (profile: UserProfile) => {
     try {
-      // Query dengan type assertion untuk menghindari error type
-      const { data: teams, error } = await supabase
+      // Ambil SEMUA tim
+      const { data: allTeams, error } = await supabase
         .from("tim")
-        .select(`
-          id,
-          nama,
-          jurusan,
-          angkatan,
-          nomor_hp,
-          acara_id,
-          anggota_tim (
-            nama_pemain,
-            nim
-          )
-        `)
-        .eq("created_by", userId);
+        .select("*");
 
       if (error) {
-        console.error("Error fetching teams:", error);
+        console.error("Error fetching all teams:", error);
+        setUserTeams([]);
         return;
       }
 
-      // Type assertion untuk mengatasi error TypeScript
-      const typedTeams = teams as unknown as Array<{
-        id: string;
-        nama: string;
-        jurusan: string | null;
-        angkatan: string | null;
-        nomor_hp: string | null;
-        acara_id: string | null;
-        anggota_tim: Array<{
-          nama_pemain: string;
-          nim: string | null;
-        }>;
-      }>;
+      console.log("All teams:", allTeams);
 
-      const userTeams: UserTeam[] = typedTeams.map(team => ({
-        id: team.id,
-        nama: team.nama,
-        jurusan: team.jurusan || "",
-        angkatan: team.angkatan || "",
-        nomor_hp: team.nomor_hp || "",
-        anggota: team.anggota_tim.map(a => ({
-          nama_pemain: a.nama_pemain,
-          nim: a.nim || ""
-        }))
-      }));
+      const userTeams: UserTeam[] = [];
 
+      // Untuk setiap tim, cek apakah user adalah anggota
+      for (const team of allTeams || []) {
+        // Cek anggota tim berdasarkan NIM atau nama
+        const { data: anggotaData } = await supabase
+          .from("anggota_tim")
+          .select("nama_pemain, nim")
+          .eq("tim_id", team.id)
+          .or(`nim.eq.${profile.nim},nama_pemain.ilike.%${profile.full_name}%`)
+          .limit(1);
+
+        // Jika ditemukan anggota yang cocok, tambahkan ke daftar
+        if (anggotaData && anggotaData.length > 0) {
+          // Ambil semua anggota tim untuk display
+          const { data: allAnggota } = await supabase
+            .from("anggota_tim")
+            .select("nama_pemain, nim")
+            .eq("tim_id", team.id);
+
+          userTeams.push({
+            id: team.id,
+            nama: team.nama,
+            jurusan: team.jurusan || "",
+            angkatan: team.angkatan || "",
+            nomor_hp: team.nomor_hp || "",
+            anggota: (allAnggota || []).map(a => ({
+              nama_pemain: a.nama_pemain,
+              nim: a.nim || ""
+            }))
+          });
+        }
+      }
+
+      console.log("Filtered user teams:", userTeams);
       setUserTeams(userTeams);
+
     } catch (error) {
-      console.error("Error fetching user teams:", error);
+      console.error("Error fetching all teams:", error);
+      setUserTeams([]);
     }
   };
 
@@ -257,7 +301,7 @@ export default function TournamentRegisterPage() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-            <p className="text-muted-foreground">Memuat...</p>
+            <p className="text-muted-foreground">Memuat data...</p>
           </div>
         </div>
         <Footer />
@@ -400,9 +444,10 @@ export default function TournamentRegisterPage() {
                         )}
                       </div>
                     )}
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-blue-700">
+                    <div className={`p-3 rounded-lg ${userTeams.length > 0 ? 'bg-green-50 text-green-800' : 'bg-blue-50 text-blue-700'}`}>
+                      <p className="text-sm">
                         Anda memiliki <span className="font-semibold">{userTeams.length} tim</span> yang dapat didaftarkan.
+                        {userTeams.length === 0 && " Silakan buat tim baru."}
                       </p>
                     </div>
                   </div>
@@ -416,7 +461,7 @@ export default function TournamentRegisterPage() {
             tournament={tournament}
             tournamentId={tournamentId}
             userProfile={userProfile}
-            userTeams={userTeams}
+            userTeams={userTeams || []}
             onRegistrationSuccess={loadData}
           />
 

@@ -6,12 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import Swal from "sweetalert2";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, CheckCircle, Users, User, Phone, PlusCircle, Users2, Loader2 } from "lucide-react";
-import { FormData, TournamentDetails, UserProfile, UserTeam } from "@/utils";
+import { AlertCircle, CheckCircle, Users, Loader2, UserPlus } from "lucide-react";
+import { TournamentDetails, UserProfile, UserTeam } from "@/utils";
 
 interface TeamRegistrationProps {
   tournament: TournamentDetails;
@@ -25,7 +22,7 @@ export default function TeamRegistration({
   tournament, 
   tournamentId, 
   userProfile,
-  userTeams,
+  userTeams = [], // Default value untuk menghindari error
   onRegistrationSuccess 
 }: TeamRegistrationProps) {
   const router = useRouter();
@@ -33,66 +30,7 @@ export default function TeamRegistration({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"new" | "existing">(userTeams.length > 0 ? "existing" : "new");
   const [selectedTeamId, setSelectedTeamId] = useState<string>("");
-
-  // Form untuk tim baru
-  const [newTeam, setNewTeam] = useState<FormData>({
-    nama: "",
-    jurusan: userProfile?.jurusan || "",
-    angkatan: userProfile?.angkatan || "",
-    nomor_hp: userProfile?.nomor_hp || "",
-    anggota: [
-      { 
-        nama_pemain: userProfile?.full_name || "", 
-        nim: userProfile?.nim || "" 
-      }
-    ],
-  });
-
-  const handleNewTeamChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === 'nama' || name === 'jurusan' || name === 'angkatan' || name === 'nomor_hp') {
-      setNewTeam(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleAddMember = () => {
-    setNewTeam(prev => ({
-      ...prev,
-      anggota: [...prev.anggota, { nama_pemain: "", nim: "" }]
-    }));
-  };
-
-  const handleMemberChange = (index: number, field: "nama_pemain" | "nim", value: string) => {
-    const newMembers = [...newTeam.anggota];
-    newMembers[index] = { ...newMembers[index], [field]: value };
-    setNewTeam(prev => ({ ...prev, anggota: newMembers }));
-  };
-
-  const handleRemoveMember = (index: number) => {
-    if (newTeam.anggota.length > 1) {
-      const newMembers = newTeam.anggota.filter((_, i) => i !== index);
-      setNewTeam(prev => ({ ...prev, anggota: newMembers }));
-    }
-  };
-
-  const validateForm = () => {
-    if (mode === "new") {
-      if (!newTeam.nama.trim()) return "Nama tim wajib diisi";
-      if (!newTeam.jurusan.trim()) return "Jurusan wajib diisi";
-      if (!newTeam.angkatan.trim()) return "Angkatan wajib diisi";
-      if (!newTeam.nomor_hp.trim()) return "Nomor HP wajib diisi";
-      
-      for (const member of newTeam.anggota) {
-        if (!member.nama_pemain.trim()) return "Nama anggota wajib diisi";
-        if (!member.nim.trim()) return "NIM anggota wajib diisi";
-      }
-    } else {
-      if (!selectedTeamId) return "Pilih tim yang akan didaftarkan";
-    }
-    return null;
-  };
 
   const handleSubmit = async () => {
     if (!tournament.is_registration_open) {
@@ -105,11 +43,10 @@ export default function TeamRegistration({
       return;
     }
 
-    const validationError = validateForm();
-    if (validationError) {
+    if (!selectedTeamId) {
       Swal.fire({
-        title: 'Periksa Form',
-        text: validationError,
+        title: 'Pilih Tim',
+        text: 'Silakan pilih tim yang akan didaftarkan',
         icon: 'warning',
         confirmButtonText: 'OK'
       });
@@ -120,52 +57,56 @@ export default function TeamRegistration({
     setError(null);
 
     try {
-      if (mode === "existing") {
-        // Daftarkan tim yang sudah ada
-        const { error } = await supabase
-          .from("tim")
-          .update({ acara_id: tournamentId })
-          .eq("id", selectedTeamId);
+      // Cek apakah tim sudah terdaftar di turnamen ini
+      const { data: existingTeam, error: checkError } = await supabase
+        .from("tim")
+        .select("acara_id, nama")
+        .eq("id", selectedTeamId)
+        .single();
 
-        if (error) throw error;
-      } else {
-        // Buat tim baru
-        const { data: team, error: teamError } = await supabase
-          .from("tim")
-          .insert({
-            nama: newTeam.nama,
-            jurusan: newTeam.jurusan,
-            angkatan: newTeam.angkatan,
-            nomor_hp: newTeam.nomor_hp,
-            acara_id: tournamentId,
-            jumlah_pemain: newTeam.anggota.length,
-            created_by: userProfile?.id,
-          })
-          .select()
-          .single();
+      if (checkError) throw checkError;
 
-        if (teamError) throw teamError;
-
-        // Tambahkan anggota tim
-        const anggotaData = newTeam.anggota.map(anggota => ({
-          tim_id: team.id,
-          nama_pemain: anggota.nama_pemain,
-          nim: anggota.nim,
-        }));
-
-        const { error: anggotaError } = await supabase
-          .from("anggota_tim")
-          .insert(anggotaData);
-
-        if (anggotaError) throw anggotaError;
+      // Jika tim sudah terdaftar di turnamen ini
+      if (existingTeam.acara_id === tournamentId) {
+        Swal.fire({
+          title: 'Sudah Terdaftar',
+          text: `Tim "${existingTeam.nama}" sudah terdaftar di turnamen ini`,
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+        setLoading(false);
+        return;
       }
+
+      // Jika tim sudah terdaftar di turnamen lain
+      if (existingTeam.acara_id && existingTeam.acara_id !== tournamentId) {
+        const confirmed = await Swal.fire({
+          title: 'Peringatan',
+          text: `Tim "${existingTeam.nama}" sudah terdaftar di turnamen lain. Apakah Anda yakin ingin memindahkannya ke turnamen ini?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Ya, Pindahkan',
+          cancelButtonText: 'Batal'
+        });
+
+        if (!confirmed.isConfirmed) {
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Update acara_id tim
+      const { error } = await supabase
+        .from("tim")
+        .update({ acara_id: tournamentId })
+        .eq("id", selectedTeamId);
+
+      if (error) throw error;
 
       // Tampilkan sukses
       Swal.fire({
         title: 'Berhasil!',
-        text: mode === "existing" 
-          ? 'Tim berhasil didaftarkan ke turnamen' 
-          : 'Tim baru berhasil dibuat dan didaftarkan',
+        text: `Tim "${existingTeam.nama}" berhasil didaftarkan ke turnamen`,
         icon: 'success',
         confirmButtonText: 'OK'
       }).then(() => {
@@ -175,11 +116,24 @@ export default function TeamRegistration({
 
     } catch (error: any) {
       console.error("Registration error:", error);
-      setError(error.message || "Terjadi kesalahan saat mendaftarkan tim");
+      
+      let errorMessage = "Terjadi kesalahan saat mendaftarkan tim";
+      
+      if (error.code === '23505') {
+        errorMessage = "Nama tim sudah digunakan";
+      } else if (error.code === '23503') {
+        errorMessage = "Data referensi tidak valid";
+      } else if (error.message?.includes("foreign key")) {
+        errorMessage = "Data turnamen tidak ditemukan";
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setError(errorMessage);
       
       Swal.fire({
         title: 'Gagal',
-        text: error.message || 'Terjadi kesalahan saat mendaftarkan tim',
+        text: errorMessage,
         icon: 'error',
         confirmButtonText: 'OK'
       });
@@ -188,13 +142,13 @@ export default function TeamRegistration({
     }
   };
 
-  const selectedTeam = userTeams.find(team => team.id === selectedTeamId);
+  const selectedTeam = userTeams?.find(team => team.id === selectedTeamId);
 
   return (
     <Card>
       <CardContent className="p-6">
         <h2 className="text-2xl font-bold text-foreground mb-6">
-          Pendaftaran Tim
+          Pilih Tim untuk Didaftarkan
         </h2>
 
         {error && (
@@ -204,218 +158,160 @@ export default function TeamRegistration({
           </Alert>
         )}
 
-        {/* Pilihan Mode */}
-        {userTeams.length > 0 && (
-          <Tabs value={mode} onValueChange={(v) => setMode(v as "new" | "existing")} className="mb-8">
-            <TabsList className="grid grid-cols-2 mb-6">
-              <TabsTrigger value="existing" className="gap-2">
-                <Users2 className="h-4 w-4" />
-                Gunakan Tim Saya
-              </TabsTrigger>
-              <TabsTrigger value="new" className="gap-2">
-                <PlusCircle className="h-4 w-4" />
-                Buat Tim Baru
-              </TabsTrigger>
-            </TabsList>
+        {/* Informasi penting */}
+        <Alert className="mb-6 bg-blue-50 text-blue-800 border-blue-200">
+          <Users className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Perhatian:</strong> Hanya tim yang Anda adalah anggota atau ketuanya yang dapat didaftarkan. 
+            {userTeams.length === 0 && " Anda belum memiliki tim."}
+          </AlertDescription>
+        </Alert>
 
-            <TabsContent value="existing" className="space-y-4">
-              {userTeams.length === 0 ? (
-                <Alert>
-                  <AlertDescription>
-                    Anda belum memiliki tim. Silakan buat tim baru.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <div className="space-y-4">
-                  <Label>Pilih Tim yang Sudah Ada</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {userTeams.map(team => (
-                      <div
-                        key={team.id}
-                        className={`p-4 border rounded-lg cursor-pointer transition-colors ${selectedTeamId === team.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-                        onClick={() => setSelectedTeamId(team.id)}
-                      >
-                        <div className="font-medium">{team.nama}</div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          {team.jurusan} • {team.anggota.length} anggota
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {selectedTeam && (
-                    <div className="p-4 bg-muted rounded-lg">
-                      <h4 className="font-medium mb-2">Detail Tim</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>Nama: <span className="font-medium">{selectedTeam.nama}</span></div>
-                        <div>Jurusan: <span className="font-medium">{selectedTeam.jurusan}</span></div>
-                        <div>Angkatan: <span className="font-medium">{selectedTeam.angkatan}</span></div>
-                        <div>Anggota: <span className="font-medium">{selectedTeam.anggota.length} orang</span></div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="new" className="space-y-6">
+        {/* Daftar Tim Pengguna */}
+        {userTeams.length === 0 ? (
+          <Alert>
+            <AlertDescription className="text-center py-4">
+              Anda belum memiliki tim yang dapat didaftarkan. 
+              <div className="mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => router.push('/teams/create')}
+                  className="gap-2"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Buat Tim Baru
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Tim Anda</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <Label htmlFor="nama">Nama Tim *</Label>
-                  <Input
-                    id="nama"
-                    name="nama"
-                    value={newTeam.nama}
-                    onChange={handleNewTeamChange}
-                    placeholder="Nama tim Anda"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <Label htmlFor="jurusan">Jurusan *</Label>
-                  <Input
-                    id="jurusan"
-                    name="jurusan"
-                    value={newTeam.jurusan}
-                    onChange={handleNewTeamChange}
-                    placeholder="Jurusan"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <Label htmlFor="angkatan">Angkatan *</Label>
-                  <Input
-                    id="angkatan"
-                    name="angkatan"
-                    value={newTeam.angkatan}
-                    onChange={handleNewTeamChange}
-                    placeholder="Angkatan"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <Label htmlFor="nomor_hp" className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    Nomor HP *
-                  </Label>
-                  <Input
-                    id="nomor_hp"
-                    name="nomor_hp"
-                    value={newTeam.nomor_hp}
-                    onChange={handleNewTeamChange}
-                    placeholder="0812-3456-7890"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              {/* Anggota Tim */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Anggota Tim
-                  </h4>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddMember}
-                    disabled={loading}
+                {userTeams.map(team => (
+                  <div
+                    key={team.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedTeamId === team.id ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border hover:border-primary/50 hover:bg-accent/50'}`}
+                    onClick={() => setSelectedTeamId(team.id)}
                   >
-                    Tambah Anggota
-                  </Button>
-                </div>
-
-                <div className="space-y-4">
-                  {newTeam.anggota.map((anggota, index) => (
-                    <div key={index} className="p-4 border border-border rounded-lg">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <span className="text-sm font-medium">{index + 1}</span>
-                          </div>
-                          <span className="font-medium">Anggota {index + 1}</span>
-                        </div>
-                        {newTeam.anggota.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveMember(index)}
-                            disabled={loading}
-                          >
-                            Hapus
-                          </Button>
-                        )}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-medium text-lg">{team.nama}</div>
+                      {selectedTeamId === team.id && (
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="text-sm">
+                        <span className="font-medium">Jurusan:</span> {team.jurusan || "-"}
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Nama Lengkap *</Label>
-                          <Input
-                            value={anggota.nama_pemain}
-                            onChange={(e) => handleMemberChange(index, "nama_pemain", e.target.value)}
-                            placeholder="Nama lengkap"
-                            disabled={loading}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>NIM *</Label>
-                          <Input
-                            value={anggota.nim}
-                            onChange={(e) => handleMemberChange(index, "nim", e.target.value)}
-                            placeholder="NIM"
-                            disabled={loading}
-                          />
-                        </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Angkatan:</span> {team.angkatan || "-"}
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Nomor HP:</span> {team.nomor_hp || "-"}
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Jumlah Anggota:</span> {team.anggota.length} orang
                       </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Detail Tim Terpilih */}
+            {selectedTeam && (
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-3 flex items-center gap-2 text-lg">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Detail Tim Terpilih
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <div className="text-sm text-muted-foreground">Nama Tim</div>
+                        <div className="font-medium">{selectedTeam.nama}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Jurusan</div>
+                        <div className="font-medium">{selectedTeam.jurusan || "-"}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Angkatan</div>
+                        <div className="font-medium">{selectedTeam.angkatan || "-"}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Nomor HP</div>
+                        <div className="font-medium">{selectedTeam.nomor_hp || "-"}</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="text-sm text-muted-foreground">Daftar Anggota</div>
+                    <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                      {selectedTeam.anggota.map((anggota, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-2 bg-background rounded">
+                          <div>
+                            <div className="font-medium">{anggota.nama_pemain}</div>
+                            <div className="text-xs text-muted-foreground">NIM: {anggota.nim || "-"}</div>
+                          </div>
+                          {idx === 0 && (
+                            <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
+                              Ketua
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
-        )}
-
-        {/* Tombol Aksi */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-end pt-6 border-t">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={loading}
-          >
-            Batal
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !tournament.is_registration_open}
-            className="gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Memproses...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="h-4 w-4" />
-                Daftarkan Tim
-              </>
             )}
-          </Button>
-        </div>
+
+            {/* Tombol Aksi */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-end pt-6 border-t">
+              <Button
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={loading}
+              >
+                Batal
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={loading || !tournament.is_registration_open || !selectedTeamId}
+                className="gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    Daftarkan Tim
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Catatan */}
         <div className="mt-6 pt-6 border-t text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Catatan:</p>
+          <p className="font-medium mb-2">Catatan Penting:</p>
           <ul className="list-disc list-inside space-y-1">
-            <li>Pastikan data yang diisi akurat dan valid</li>
-            <li>Tim yang sudah terdaftar tidak dapat diubah</li>
-            <li>Setiap peserta hanya boleh mendaftar 1 tim per turnamen</li>
+            <li>Hanya tim yang Anda adalah anggotanya yang dapat ditampilkan</li>
+            <li>Tim yang sudah terdaftar tidak dapat didaftarkan ulang</li>
+            <li>Setiap peserta hanya boleh terdaftar dalam 1 tim per turnamen</li>
+            <li>Pastikan data anggota tim sudah lengkap sebelum mendaftar</li>
           </ul>
         </div>
       </CardContent>
