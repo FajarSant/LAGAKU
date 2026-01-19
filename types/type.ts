@@ -113,6 +113,36 @@ export interface TeamMemberForm {
   nama_pemain: string;
   nim: string;
 }
+export interface TeamMember {
+  id?: string;
+  nama_pemain: string;
+  nim?: string;
+  email?: string;
+  dibuat_pada?: string;
+  is_ketua?: boolean;
+}
+
+export interface TeamData {
+  id: string;
+  nama: string;
+  status: string;
+  acara_id?: string;
+  jurusan?: string;
+  angkatan?: string;
+  nomor_hp?: string;
+  jumlah_pemain: number;
+  dibuat_pada: string;
+  anggota_tim?: TeamMember[];
+  acara?: {
+    id: string;
+    nama: string;
+    deskripsi?: string;
+  };
+  _count?: {
+    anggota_tim: number;
+    pertandingan: number;
+  };
+}
 
 export interface FormData {
   nama: string;
@@ -157,16 +187,25 @@ export interface UserTeam {
   anggota: TeamMemberForm[];
 }
 
-export interface TeamWithDetails extends Tim {
+export interface TeamWithDetails {
+  id: string;
+  nama: string;
+  status: string;
+  acara_id?: string;
+  jurusan?: string;
+  angkatan?: string;
+  nomor_hp?: string;
+  jumlah_pemain: number; // Hapus optional (?)
+  dibuat_pada: string;
+  anggota_tim?: TeamMember[];
   acara?: {
     id: string;
     nama: string;
     deskripsi?: string;
   };
-  anggota_tim?: AnggotaTim[];
   _count?: {
-    anggota_tim?: number;
-    pertandingan?: number;
+    anggota_tim: number;
+    pertandingan: number;
   };
 }
 export interface TimSimple {

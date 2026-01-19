@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -13,9 +14,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, PlusCircle, XCircle, Users, User, Phone, Building } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  X,
+  Users,
+  Phone,
+  User,
+  Crown,
+  Trash2,
+  Shield,
+} from "lucide-react";
 import { Pengguna } from "@/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface CreateTeamDialogProps {
   open: boolean;
@@ -36,10 +47,7 @@ export default function CreateTeamDialog({
   user,
 }: CreateTeamDialogProps) {
   const supabase = createClient();
-  
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
   const [formData, setFormData] = useState({
     nama: "",
     jurusan: user.jurusan || "",
@@ -55,7 +63,6 @@ export default function CreateTeamDialog({
 
   useEffect(() => {
     if (open) {
-      // Reset form dengan data user
       setFormData({
         nama: "",
         jurusan: user.jurusan || "",
@@ -68,105 +75,87 @@ export default function CreateTeamDialog({
           },
         ],
       });
-      setError(null);
     }
   }, [open, user]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleMemberChange = (index: number, field: keyof TeamMember, value: string) => {
-    const newMembers = [...formData.anggota];
-    newMembers[index] = { ...newMembers[index], [field]: value };
-    setFormData(prev => ({ ...prev, anggota: newMembers }));
-  };
-
-  const handleAddMember = () => {
-    setFormData(prev => ({
-      ...prev,
-      anggota: [...prev.anggota, { nama_pemain: "", nim: "" }],
-    }));
-  };
-
-  const handleRemoveMember = (index: number) => {
-    if (formData.anggota.length > 1) {
-      const newMembers = formData.anggota.filter((_, i) => i !== index);
-      setFormData(prev => ({ ...prev, anggota: newMembers }));
-    }
-  };
-
-  const validateForm = () => {
+  const validate = () => {
     if (!formData.nama.trim()) {
-      return "Nama tim wajib diisi";
+      toast.error("Nama tim wajib diisi");
+      return false;
     }
     if (!formData.jurusan.trim()) {
-      return "Jurusan wajib diisi";
+      toast.error("Jurusan wajib diisi");
+      return false;
     }
     if (!formData.angkatan.trim()) {
-      return "Angkatan wajib diisi";
+      toast.error("Angkatan wajib diisi");
+      return false;
     }
     if (!formData.nomor_hp.trim()) {
-      return "Nomor HP wajib diisi";
+      toast.error("Nomor HP wajib diisi");
+      return false;
     }
     
     for (let i = 0; i < formData.anggota.length; i++) {
       const member = formData.anggota[i];
       if (!member.nama_pemain.trim()) {
-        return `Nama anggota ${i + 1} wajib diisi`;
+        toast.error(`Nama anggota ${i + 1} wajib diisi`);
+        return false;
       }
       if (!member.nim.trim()) {
-        return `NIM anggota ${i + 1} wajib diisi`;
+        toast.error(`NIM anggota ${i + 1} wajib diisi`);
+        return false;
+      }
+      if (!/^[A-Za-z]?\d{9,15}$/.test(member.nim.trim())) {
+        toast.error(`Format NIM anggota ${i + 1} tidak valid`);
+        return false;
       }
     }
     
-    return null;
+    return true;
   };
 
   const handleSubmit = async () => {
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+    if (!validate()) return;
 
     setLoading(true);
-    setError(null);
+    const toastId = toast.loading("Membuat tim...");
 
     try {
-      // Cek apakah tim dengan nama yang sama sudah ada
+      // Cek nama tim
       const { data: existingTeam } = await supabase
         .from("tim")
         .select("id")
-        .eq("nama", formData.nama)
+        .ilike("nama", formData.nama.trim())
         .maybeSingle();
 
       if (existingTeam) {
-        throw new Error("Nama tim sudah digunakan, silakan gunakan nama lain");
+        throw new Error("Nama tim sudah digunakan");
       }
 
-      // Insert tim baru (TANPA created_by)
+      // Buat tim
       const { data: team, error: teamError } = await supabase
         .from("tim")
         .insert({
-          nama: formData.nama,
-          jurusan: formData.jurusan,
-          angkatan: formData.angkatan,
-          nomor_hp: formData.nomor_hp,
+          nama: formData.nama.trim(),
+          jurusan: formData.jurusan.trim(),
+          angkatan: formData.angkatan.trim(),
+          nomor_hp: formData.nomor_hp.replace(/\D/g, ""),
           jumlah_pemain: formData.anggota.length,
           acara_id: null,
+          status: "aktif",
+          dibuat_pada: new Date().toISOString(),
         })
         .select()
         .single();
 
       if (teamError) throw teamError;
 
-      // Insert anggota tim
+      // Buat anggota
       const anggotaData = formData.anggota.map(member => ({
         tim_id: team.id,
-        nama_pemain: member.nama_pemain,
-        nim: member.nim,
+        nama_pemain: member.nama_pemain.trim(),
+        nim: member.nim.trim().toUpperCase(),
       }));
 
       const { error: anggotaError } = await supabase
@@ -175,13 +164,18 @@ export default function CreateTeamDialog({
 
       if (anggotaError) throw anggotaError;
 
-      // Sukses
-      alert("Tim berhasil dibuat! Anda bisa mendaftarkan tim ini ke turnamen nanti.");
-      onTeamCreated();
+      toast.dismiss(toastId);
+      toast.success(`Tim "${formData.nama}" berhasil dibuat!`);
+
+      setTimeout(() => {
+        onOpenChange(false);
+        onTeamCreated();
+      }, 1000);
 
     } catch (error: any) {
-      console.error("Error creating team:", error);
-      setError(error.message || "Terjadi kesalahan saat membuat tim");
+      toast.dismiss(toastId);
+      toast.error(error.message || "Gagal membuat tim");
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -189,162 +183,158 @@ export default function CreateTeamDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <PlusCircle className="w-5 h-5" />
-            Buat Tim Baru
-          </DialogTitle>
+          <DialogTitle className="text-xl">Buat Tim Baru</DialogTitle>
           <DialogDescription>
-            Buat tim Anda terlebih dahulu, nanti bisa daftar ke turnamen
+            Bentuk tim untuk persiapan mengikuti turnamen
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {error && (
-            <Alert variant="destructive">
-              <XCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {/* Informasi Tim */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium flex items-center gap-2">
-              <Building className="w-5 h-5" />
-              Informasi Tim
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nama">Nama Tim *</Label>
-                <Input
-                  id="nama"
-                  name="nama"
-                  value={formData.nama}
-                  onChange={handleInputChange}
-                  placeholder="Nama tim Anda"
-                  disabled={loading}
-                />
-                <p className="text-xs text-gray-500">
-                  Nama tim akan digunakan untuk identifikasi
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="jurusan">Jurusan *</Label>
-                <Input
-                  id="jurusan"
-                  name="jurusan"
-                  value={formData.jurusan}
-                  onChange={handleInputChange}
-                  placeholder="Jurusan"
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="angkatan">Angkatan *</Label>
-                <Input
-                  id="angkatan"
-                  name="angkatan"
-                  value={formData.angkatan}
-                  onChange={handleInputChange}
-                  placeholder="Angkatan"
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="nomor_hp" className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Nomor HP *
-                </Label>
-                <Input
-                  id="nomor_hp"
-                  name="nomor_hp"
-                  value={formData.nomor_hp}
-                  onChange={handleInputChange}
-                  placeholder="0812-3456-7890"
-                  disabled={loading}
-                />
-              </div>
+        <div className="space-y-4">
+          {/* Info Tim */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Nama Tim *</Label>
+              <Input
+                value={formData.nama}
+                onChange={(e) => setFormData({...formData, nama: e.target.value})}
+                placeholder="Nama tim"
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Angkatan *</Label>
+              <Input
+                value={formData.angkatan}
+                onChange={(e) => setFormData({...formData, angkatan: e.target.value})}
+                placeholder="2023"
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Jurusan *</Label>
+              <Input
+                value={formData.jurusan}
+                onChange={(e) => setFormData({...formData, jurusan: e.target.value})}
+                placeholder="Jurusan"
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5" /> Nomor HP *
+              </Label>
+              <Input
+                value={formData.nomor_hp}
+                onChange={(e) => setFormData({...formData, nomor_hp: e.target.value})}
+                placeholder="081234567890"
+                disabled={loading}
+              />
             </div>
           </div>
 
-          {/* Anggota Tim */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Anggota Tim ({formData.anggota.length} orang)
-              </h3>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddMember}
-                disabled={loading || formData.anggota.length >= 15}
-              >
-                Tambah Anggota
-              </Button>
+          {/* Anggota */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <Label className="text-sm font-medium">Anggota Tim</Label>
+              <Badge variant="outline">
+                {formData.anggota.length} anggota
+              </Badge>
             </div>
 
-            <div className="space-y-4">
-              {formData.anggota.map((anggota, index) => (
-                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-sm font-medium">{index + 1}</span>
-                      </div>
-                      <span className="font-medium">Anggota {index + 1}</span>
-                      {index === 0 && (
-                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                          Ketua Tim
-                        </span>
-                      )}
-                    </div>
-                    {formData.anggota.length > 1 && index !== 0 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveMember(index)}
-                        disabled={loading}
-                      >
-                        Hapus
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Nama Lengkap *</Label>
-                      <Input
-                        value={anggota.nama_pemain}
-                        onChange={(e) => handleMemberChange(index, "nama_pemain", e.target.value)}
-                        placeholder="Nama lengkap"
-                        disabled={loading || index === 0}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>NIM *</Label>
-                      <Input
-                        value={anggota.nim}
-                        onChange={(e) => handleMemberChange(index, "nim", e.target.value)}
-                        placeholder="NIM"
-                        disabled={loading || index === 0}
-                      />
-                    </div>
-                  </div>
+            {/* Ketua */}
+            <div className="mb-3 p-3 bg-primary/5 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">Ketua Tim</span>
                 </div>
-              ))}
+                <Badge>Anda</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  value={formData.anggota[0].nama_pemain}
+                  readOnly
+                  className="text-sm"
+                />
+                <Input
+                  value={formData.anggota[0].nim}
+                  readOnly
+                  className="text-sm"
+                />
+              </div>
             </div>
+
+            {/* Anggota lain */}
+            {formData.anggota.slice(1).map((member, index) => (
+              <div key={index} className="mb-2 p-3 border rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">
+                    Anggota {index + 2}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const newAnggota = formData.anggota.filter((_, i) => i !== index + 1);
+                      setFormData({...formData, anggota: newAnggota});
+                    }}
+                    disabled={loading}
+                    className="h-6 w-6 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={member.nama_pemain}
+                    onChange={(e) => {
+                      const newAnggota = [...formData.anggota];
+                      newAnggota[index + 1].nama_pemain = e.target.value;
+                      setFormData({...formData, anggota: newAnggota});
+                    }}
+                    placeholder="Nama"
+                    disabled={loading}
+                    className="text-sm"
+                  />
+                  <Input
+                    value={member.nim}
+                    onChange={(e) => {
+                      const newAnggota = [...formData.anggota];
+                      newAnggota[index + 1].nim = e.target.value;
+                      setFormData({...formData, anggota: newAnggota});
+                    }}
+                    placeholder="NIM"
+                    disabled={loading}
+                    className="text-sm"
+                  />
+                </div>
+              </div>
+            ))}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (formData.anggota.length < 15) {
+                  setFormData({
+                    ...formData,
+                    anggota: [...formData.anggota, { nama_pemain: "", nim: "" }]
+                  });
+                }
+              }}
+              disabled={loading || formData.anggota.length >= 15}
+              className="w-full mt-2 gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah Anggota
+            </Button>
           </div>
         </div>
 
-        <DialogFooter className="flex flex-col sm:flex-row gap-2">
+        <DialogFooter>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -352,35 +342,15 @@ export default function CreateTeamDialog({
           >
             Batal
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="gap-2"
-          >
+          <Button onClick={handleSubmit} disabled={loading} className="gap-2">
             {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Membuat Tim...
-              </>
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <>
-                <PlusCircle className="w-4 h-4" />
-                Buat Tim
-              </>
+              <Shield className="w-4 h-4" />
             )}
+            Buat Tim
           </Button>
         </DialogFooter>
-
-        <div className="text-xs text-gray-500 dark:text-gray-400 pt-4 border-t">
-          <p className="font-medium mb-1">Catatan:</p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Anda akan menjadi ketua tim (anggota pertama)</li>
-            <li>Tim akan dibuat tanpa mengikuti turnamen terlebih dahulu</li>
-            <li>Nanti Anda bisa mendaftarkan tim ini ke turnamen yang tersedia</li>
-            <li>Pastikan semua data anggota benar dan valid</li>
-            <li>Maksimal 15 anggota per tim</li>
-          </ul>
-        </div>
       </DialogContent>
     </Dialog>
   );

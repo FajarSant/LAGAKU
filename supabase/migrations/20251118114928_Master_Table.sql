@@ -88,7 +88,7 @@ create table if not exists public.acara (
 -- =======================================================
 create table if not exists public.tim (
     id uuid primary key default gen_random_uuid(),
-    acara_id uuid not null references public.acara(id) on delete cascade,
+    acara_id uuid references public.acara(id) on delete cascade,
     nama text not null,
     jurusan text,
     angkatan text,

@@ -25,6 +25,8 @@ export type {
   UserProfile,
   UserTeam,
   TeamWithDetails,
+  TeamData,
+  TeamMember,
   TeamMemberForm,
   TeamRegistrationData,
   PlayerSearchResult,

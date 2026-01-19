@@ -285,7 +285,7 @@ export default function TournamentRegisterPage() {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     {!isLoggedIn ? (
-                      <Button onClick={() => router.push(`/auth/login`)}>
+                      <Button onClick={() => router.push(`/auth/login?redirect=/tournaments/${tournamentId}/register`)}>
                         Login Sekarang
                       </Button>
                     ) : (

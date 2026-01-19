@@ -1,163 +1,211 @@
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MoreVertical, Settings, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import {
+  Users,
+  Trophy,
+  Calendar,
+  MapPin,
+  Phone,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Eye,
+  Sword,
+  Crown,
+} from "lucide-react";
 import { TeamWithDetails } from "@/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 interface TeamCardProps {
   team: TeamWithDetails;
   onRefresh: () => void;
+  onDeleteTeam: (teamId: string) => void;
 }
 
-export default function TeamCard({ team, onRefresh }: TeamCardProps) {
-  const supabase = createClient();
-  const [isManaging, setIsManaging] = useState(false);
+export default function TeamCard({
+  team,
+  onRefresh,
+  onDeleteTeam,
+}: TeamCardProps) {
+  // Anggota tim dengan penanganan undefined
+  const anggotaTim = team.anggota_tim || [];
+  const anggotaCount = team._count?.anggota_tim || anggotaTim.length;
+  const pertandinganCount = team._count?.pertandingan || 0;
 
-  const handleRemoveTeam = async () => {
-    if (!confirm("Apakah Anda yakin ingin menghapus tim ini? Aksi ini tidak dapat dibatalkan.")) return;
-    
-    try {
-      const { error: teamError } = await supabase
-        .from("tim")
-        .delete()
-        .eq("id", team.id);
+  // Anggota pertama dianggap sebagai ketua jika tidak ada properti is_ketua
+  const ketuaTim = anggotaTim.length > 0 ? anggotaTim[0] : null;
 
-      if (teamError) throw teamError;
-      
-      alert("Tim berhasil dihapus!");
-      onRefresh();
-    } catch (error) {
-      console.error("Error removing team:", error);
-      alert("Gagal menghapus tim. Pastikan tidak ada pertandingan yang terkait.");
+  const handleDelete = () => {
+    if (
+      window.confirm(
+        `Apakah Anda yakin ingin menghapus tim "${team.nama}"? Tindakan ini tidak dapat dibatalkan.`,
+      )
+    ) {
+      onDeleteTeam(team.id);
     }
   };
 
-  const anggotaTimCount = team._count?.anggota_tim || 0;
+  // Format tanggal dengan penanganan error
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Tanggal tidak tersedia";
+    try {
+      return new Date(dateString).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    } catch (error) {
+      return "Tanggal tidak valid";
+    }
+  };
+
+  // Format nama untuk ditampilkan
+  const formatName = (name?: string) => {
+    if (!name) return "Nama tidak tersedia";
+    return name.length > 30 ? name.substring(0, 30) + "..." : name;
+  };
 
   return (
-    <Card className="hover:shadow-lg transition-all relative border border-gray-200 dark:border-gray-700">
+    <Card className="hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-800 overflow-hidden group">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <CardTitle className="text-lg">{team.nama}</CardTitle>
-              <Badge variant={team.status === "aktif" ? "default" : "destructive"}>
-                {team.status === "aktif" ? "Aktif" : "Gugur"}
+          <div className="flex-1 min-w-0">
+            <CardTitle className="flex items-center gap-2 text-lg truncate">
+              {formatName(team.nama)}
+              <Badge
+                variant={team.status === "aktif" ? "default" : "secondary"}
+                className={
+                  team.status === "aktif"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+                }
+              >
+                {team.status === "aktif" ? "Aktif" : "Nonaktif"}
               </Badge>
-            </div>
-            <CardDescription className="flex items-center gap-1">
-              <ExternalLink className="w-3 h-3" />
-              {team.acara?.nama || "Turnamen"}
-            </CardDescription>
+            </CardTitle>
+            {team.acara?.nama && (
+              <CardDescription className="flex items-center gap-1 mt-1">
+                <Trophy className="w-3 h-3" />
+                {team.acara.nama.length > 40
+                  ? team.acara.nama.substring(0, 40) + "..."
+                  : team.acara.nama}
+              </CardDescription>
+            )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsManaging(!isManaging)}
-            className="hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <MoreVertical className="w-4 h-4" />
-          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <Eye className="w-4 h-4" />
+                Lihat Detail
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <Edit className="w-4 h-4" />
+                Edit Tim
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="gap-2 text-red-600 dark:text-red-400 cursor-pointer"
+                onClick={handleDelete}
+              >
+                <Trash2 className="w-4 h-4" />
+                Hapus Tim
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
-      
-      <CardContent className="pb-3">
-        <div className="space-y-4">
-          {/* Team Members */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Anggota Tim ({anggotaTimCount})
-              </p>
+
+      <CardContent>
+        <div className="space-y-3">
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Users className="w-4 h-4 text-blue-500" />
+              <span>{anggotaCount} Anggota</span>
             </div>
-            <div className="space-y-2">
-              {team.anggota_tim?.slice(0, 3).map(member => (
-                <div key={member.id} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback className="bg-gray-200 dark:bg-gray-700">
-                      {member.nama_pemain.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{member.nama_pemain}</p>
-                    <p className="text-xs text-gray-500">{member.nim || "-"}</p>
-                  </div>
-                </div>
-              ))}
-              {anggotaTimCount > 3 && (
-                <p className="text-sm text-gray-500 text-center">
-                  +{anggotaTimCount - 3} anggota lainnya
-                </p>
-              )}
+            <div className="flex items-center gap-2 text-sm">
+              <Sword className="w-4 h-4 text-red-500" />
+              <span>{pertandinganCount} Pertandingan</span>
             </div>
           </div>
 
           {/* Team Info */}
-          <div className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
-            <div className="grid grid-cols-2 gap-2">
+          {(team.jurusan || team.angkatan) && (
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               {team.jurusan && (
-                <div>
-                  <span className="text-gray-500">Jurusan:</span>
-                  <p className="font-medium">{team.jurusan}</p>
-                </div>
-              )}
-              {team.angkatan && (
-                <div>
-                  <span className="text-gray-500">Angkatan:</span>
-                  <p className="font-medium">{team.angkatan}</p>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3 h-3" />
+                  {team.jurusan}
+                  {team.angkatan && ` • Angkatan ${team.angkatan}`}
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {team.nomor_hp && (
-                <div>
-                  <span className="text-gray-500">Kontak:</span>
-                  <p className="font-medium">{team.nomor_hp}</p>
-                </div>
-              )}
-              <div>
-                <span className="text-gray-500">Pertandingan:</span>
-                <p className="font-medium">{team._count?.pertandingan || 0}</p>
+          )}
+
+          {/* Captain */}
+          {ketuaTim && (
+            <div className="text-sm">
+              <div className="flex items-center gap-2 font-medium">
+                <Crown className="w-3 h-3 text-yellow-500" />
+                Ketua Tim:
+              </div>
+              <div className="ml-5 text-gray-600 dark:text-gray-400">
+                {ketuaTim.nama_pemain || "Nama tidak tersedia"}
+                {ketuaTim.nim && ` • ${ketuaTim.nim}`}
               </div>
             </div>
+          )}
+
+          {/* Contact */}
+          {team.nomor_hp && (
+            <div className="text-sm flex items-center gap-2">
+              <Phone className="w-3 h-3" />
+              {team.nomor_hp}
+            </div>
+          )}
+
+          {/* Created Date */}
+          <div className="text-xs text-gray-500 dark:text-gray-500 pt-2 border-t border-gray-100 dark:border-gray-800">
+            Dibuat: {formatDate(team.dibuat_pada)}
           </div>
         </div>
-      </CardContent>
 
-      <CardFooter className="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-        {team.acara?.id && (
-          <Link href={`/tournaments/${team.acara.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Lihat Turnamen
-            </Button>
-          </Link>
-        )}
-        <Button size="sm" className="flex-1">
-          <Settings className="w-4 h-4 mr-2" />
-          Kelola
-        </Button>
-      </CardFooter>
-
-      {/* Management Dropdown */}
-      {isManaging && (
-        <div className="absolute right-4 top-12 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 p-2 z-10 min-w-[120px]">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
-            onClick={handleRemoveTeam}
-          >
-            Hapus Tim
+        {/* Actions */}
+        <div className="flex gap-2 mt-4">
+          <Button variant="outline" size="sm" className="flex-1" asChild>
+            <Link href={`/my-teams/${team.id}`}>
+              <Eye className="w-4 h-4 mr-2" />
+              Detail
+            </Link>
           </Button>
         </div>
-      )}
+      </CardContent>
     </Card>
   );
 }
