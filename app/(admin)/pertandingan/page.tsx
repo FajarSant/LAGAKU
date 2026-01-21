@@ -43,7 +43,7 @@ export default function PertandinganPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">Manajemen Pertandingan</h1>
-        <Link href="/admin/pertandingan/tambah">
+        <Link href="/pertandingan/tambah">
           <Button>Generate Pertandingan</Button>
         </Link>
       </div>
