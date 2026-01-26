@@ -175,23 +175,7 @@ export default function HomePage() {
                 pertandingan seru dengan teknologi terkini
               </p>
 
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="px-8 py-6 text-base bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  Mulai Kompetisi
-                  <ChevronRight className="ml-2 w-4 h-4" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="px-8 py-6 text-base border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-300"
-                >
-                  <Target className="mr-2 w-4 h-4" />
-                  Lihat Turnamen
-                </Button>
-              </div>
+              
             </div>
 
             {/* Stats Grid - Diperbaiki untuk light mode */}

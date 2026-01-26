@@ -143,20 +143,20 @@ export default function EventsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       <Navigation />
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
+      <div className="bg-linear-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <Badge className="mb-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0">
+              <Badge className="mb-4 bg-linear-to-r from-blue-500 to-purple-500 text-white border-0">
                 <Trophy className="w-3 h-3 mr-1.5" />
                 Turnamen
               </Badge>
 
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Daftar Turnamen
               </h1>
 
@@ -335,7 +335,7 @@ export default function EventsPage() {
                           <Link href={`/match/${event.id}`}>
                             <Button
                               size="sm"
-                              className="bg-gradient-to-r from-blue-500 to-purple-500"
+                              className="bg-linear-to-r from-blue-500 to-purple-500"
                             >
                               <Swords className="w-4 h-4 mr-1" />
                               Bracket
@@ -352,7 +352,7 @@ export default function EventsPage() {
 
           {/* Quick Stats */}
           {!loading && events.length > 0 && (
-            <div className="mt-12 p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-xl">
+            <div className="mt-12 p-6 bg-linear-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-xl">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4">
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
@@ -397,7 +397,7 @@ export default function EventsPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/match">
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-500">
+                <Button className="bg-linear-to-r from-blue-500 to-purple-500">
                   Lihat Semua Pertandingan
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>

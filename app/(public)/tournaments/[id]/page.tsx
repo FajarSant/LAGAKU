@@ -190,7 +190,7 @@ export default function TournamentDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
@@ -205,7 +205,7 @@ export default function TournamentDetailPage() {
 
   if (error || !tournament) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-2xl mx-auto border-0 shadow-xl">
@@ -222,7 +222,7 @@ export default function TournamentDetailPage() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
                   onClick={() => router.push("/tournaments")}
-                  className="gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
+                  className="gap-2 bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Kembali ke Daftar Turnamen
@@ -244,7 +244,7 @@ export default function TournamentDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       <Navigation />
 
       <div className="container mx-auto px-4 py-8">

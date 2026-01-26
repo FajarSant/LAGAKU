@@ -138,7 +138,7 @@ export default function TournamentBracketPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto space-y-8">
@@ -154,7 +154,7 @@ export default function TournamentBracketPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
         <Navigation />
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-6xl mx-auto text-center">
@@ -187,11 +187,11 @@ export default function TournamentBracketPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       <Navigation />
 
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
+      <div className="bg-linear-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             {/* Breadcrumb */}

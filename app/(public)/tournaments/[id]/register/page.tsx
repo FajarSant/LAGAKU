@@ -352,11 +352,11 @@ export default function TournamentRegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-screen bg-linear-to-b from-background to-muted/20">
       <Navigation />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
+      <div className="bg-linear-to-r from-primary/10 to-primary/5 border-b">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             <Button
@@ -410,7 +410,7 @@ export default function TournamentRegisterPage() {
                   <div className="space-y-3">
                     {tournament.tanggal_mulai_pertandingan && (
                       <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+                        <Calendar className="h-5 w-5 text-primary shrink-0" />
                         <div>
                           <p className="text-sm text-muted-foreground">Tanggal Mulai</p>
                           <p className="font-medium">{formatDate(tournament.tanggal_mulai_pertandingan)}</p>
@@ -420,7 +420,7 @@ export default function TournamentRegisterPage() {
                     
                     {tournament.deadline_pendaftaran && (
                       <div className="flex items-center gap-3">
-                        <Clock className="h-5 w-5 text-primary flex-shrink-0" />
+                        <Clock className="h-5 w-5 text-primary shrink-0" />
                         <div>
                           <p className="text-sm text-muted-foreground">Deadline Pendaftaran</p>
                           <p className="font-medium">{formatDate(tournament.deadline_pendaftaran)}</p>

@@ -114,9 +114,10 @@ export default function Navigation() {
   // Navigation items untuk bottom nav
   const bottomNavItems = [
     { href: "/", label: "Home", icon: Home },
-    { href: "/jschadule", label: "Jadwal", icon: Calendar },
-    { href: "/match", label: "Match", icon: Trophy },
-     { href: "/my-teams", label: "Tim", icon: Users },
+     { href: "/schadule", label: "Jadwal", icon: Calendar },
+    { href: "/match", label: "Pertandingan", icon: Trophy },
+    { href: "/my-teams", label: "Tim", icon: Users },
+    { href: "/tournaments", label: "Turnamen", icon: Trophy },
   ];
 
   // Navigation items untuk desktop menu
