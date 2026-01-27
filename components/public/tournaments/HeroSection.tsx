@@ -46,7 +46,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   <ArrowRight className="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                 </Button>
               </Link>
-              <Link href="/tournaments/guide" passHref>
+              <Link href="/guide" passHref>
                 <Button
                   size="lg"
                   variant="outline"

@@ -241,7 +241,7 @@ export default function AdminDashboard() {
       value: stats.totalAcara,
       icon: <Trophy className="h-5 w-5" />,
       description: "Turnamen tersedia",
-      color: "bg-gradient-to-br from-blue-500 to-blue-600",
+      color: "bg-linear-to-br from-blue-500 to-blue-600",
       trend: stats.totalAcara > 0 ? "positive" : "neutral",
     },
     {
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
       value: stats.totalTim,
       icon: <UsersRound className="h-5 w-5" />,
       description: "Tim terdaftar",
-      color: "bg-gradient-to-br from-green-500 to-green-600",
+      color: "bg-linear-to-br from-green-500 to-green-600",
       trend: stats.totalTim > 0 ? "positive" : "neutral",
     },
     {
@@ -257,7 +257,7 @@ export default function AdminDashboard() {
       value: stats.totalAnggotaTim,
       icon: <UserPlus className="h-5 w-5" />,
       description: "Total pemain",
-      color: "bg-gradient-to-br from-purple-500 to-purple-600",
+      color: "bg-linear-to-br from-purple-500 to-purple-600",
       trend: stats.totalAnggotaTim > 0 ? "positive" : "neutral",
     },
     {
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
       value: stats.pesertaAktif,
       icon: <Users className="h-5 w-5" />,
       description: "Mahasiswa terdaftar",
-      color: "bg-gradient-to-br from-orange-500 to-orange-600",
+      color: "bg-linear-to-br from-orange-500 to-orange-600",
       trend: stats.pesertaAktif > 0 ? "positive" : "neutral",
     },
     {
@@ -273,7 +273,7 @@ export default function AdminDashboard() {
       value: stats.totalRound,
       icon: <Target className="h-5 w-5" />,
       description: "Total round/babak",
-      color: "bg-gradient-to-br from-red-500 to-red-600",
+      color: "bg-linear-to-br from-red-500 to-red-600",
       trend: stats.totalRound > 0 ? "positive" : "neutral",
     },
     {
@@ -281,7 +281,7 @@ export default function AdminDashboard() {
       value: stats.pertandinganBerlangsung + stats.pertandinganDijadwalkan + stats.pertandinganSelesai,
       icon: <Activity className="h-5 w-5" />,
       description: "Total pertandingan",
-      color: "bg-gradient-to-br from-indigo-500 to-indigo-600",
+      color: "bg-linear-to-br from-indigo-500 to-indigo-600",
       trend: "positive",
     },
   ];
@@ -343,16 +343,16 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6 space-y-8">
-      {/* Header dengan gradient */}
-      <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+      {/* Header dengan linear */}
+      <div className="bg-linear-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+              <div className="p-3 bg-linear-to-br from-blue-500 to-blue-600 rounded-xl">
                 <BarChart3 className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Dashboard Admin
                 </h1>
                 <p className="text-muted-foreground mt-2">
@@ -381,7 +381,7 @@ export default function AdminDashboard() {
           <Button
             onClick={loadDashboard}
             disabled={loading || refreshing}
-            className="gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+            className="gap-2 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <RefreshCw
               className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
@@ -391,7 +391,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Stats Grid dengan gradient */}
+      {/* Stats Grid dengan linear */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {statCards.map((stat, index) => (
           <Card
@@ -411,7 +411,7 @@ export default function AdminDashboard() {
               {loading ? (
                 <Skeleton className="h-8 w-16 mb-2" />
               ) : (
-                <div className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+                <div className="text-3xl font-bold bg-linear-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
                   {stat.value.toLocaleString()}
                 </div>
               )}
@@ -439,7 +439,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Matches Card */}
         <Card className="border shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 border-b">
+          <CardHeader className="bg-linear-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -474,7 +474,7 @@ export default function AdminDashboard() {
                   <div key={match.id} className="p-4 hover:bg-muted/30 transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <div className="font-medium truncate">{match.acara?.nama || "Turnamen"}</div>
-                      <div className="ml-2 flex-shrink-0">
+                      <div className="ml-2 shrink-0">
                         {getStatusBadge(match.status)}
                       </div>
                     </div>
@@ -504,7 +504,7 @@ export default function AdminDashboard() {
 
         {/* Recent Teams Card */}
         <Card className="border shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 border-b">
+          <CardHeader className="bg-linear-to-r from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
@@ -544,7 +544,7 @@ export default function AdminDashboard() {
                           {team.jurusan}
                         </div>
                       </div>
-                      <div className="ml-2 flex-shrink-0">
+                      <div className="ml-2 shrink-0">
                         {getTeamStatusBadge(team.status)}
                       </div>
                     </div>
@@ -568,7 +568,7 @@ export default function AdminDashboard() {
 
         {/* Recent Events Card */}
         <Card className="border shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10 border-b">
+          <CardHeader className="bg-linear-to-r from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -603,7 +603,7 @@ export default function AdminDashboard() {
                   <div key={event.id} className="p-4 hover:bg-muted/30 transition-colors">
                     <div className="flex justify-between items-start mb-3">
                       <div className="font-medium truncate">{event.nama}</div>
-                      <div className="ml-2 flex-shrink-0">
+                      <div className="ml-2 hrink-0">
                         {getStatusBadge(event.status)}
                       </div>
                     </div>
@@ -645,7 +645,7 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-800/10 p-6 rounded-xl border border-green-200 dark:border-green-800">
+            <div className="bg-linear-to-br from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-800/10 p-6 rounded-xl border border-green-200 dark:border-green-800">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-lg font-semibold text-green-800 dark:text-green-300">Selesai</div>
                 <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
@@ -662,7 +662,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/10 dark:to-amber-800/10 p-6 rounded-xl border border-amber-200 dark:border-amber-800">
+            <div className="bg-linear-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/10 dark:to-amber-800/10 p-6 rounded-xl border border-amber-200 dark:border-amber-800">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-lg font-semibold text-amber-800 dark:text-amber-300">Berlangsung</div>
                 <Activity className="h-8 w-8 text-amber-600 dark:text-amber-400 animate-pulse" />
@@ -679,7 +679,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/10 dark:to-blue-800/10 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+            <div className="bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/10 dark:to-blue-800/10 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-lg font-semibold text-blue-800 dark:text-blue-300">Dijadwalkan</div>
                 <Clock className="h-8 w-8 text-blue-600 dark:text-blue-400" />

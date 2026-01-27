@@ -17,12 +17,8 @@ import {
   LogIn,
   Sun,
   Moon,
-  Menu,
-  X,
   ChevronDown,
-  Settings,
   Bell,
-  PlusCircle,
 } from "lucide-react";
 
 // shadcn Components
@@ -37,8 +33,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
 
 interface PenggunaProfile {
   id: string;
@@ -104,7 +98,7 @@ export default function Navigation() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = "/login";
+    window.location.href = "/auth/login";
   };
 
   const toggleTheme = () => {
@@ -114,7 +108,7 @@ export default function Navigation() {
   // Navigation items untuk bottom nav
   const bottomNavItems = [
     { href: "/", label: "Home", icon: Home },
-     { href: "/schadule", label: "Jadwal", icon: Calendar },
+    { href: "/schadule", label: "Jadwal", icon: Calendar },
     { href: "/match", label: "Pertandingan", icon: Trophy },
     { href: "/my-teams", label: "Tim", icon: Users },
     { href: "/tournaments", label: "Turnamen", icon: Trophy },
@@ -186,24 +180,6 @@ export default function Navigation() {
                 <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
 
-              {/* Notifications - Desktop */}
-              {authUser && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 rounded-full relative hidden sm:flex"
-                  aria-label="Notifications"
-                >
-                  <Bell className="h-4 w-4" />
-                  <Badge
-                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-                    variant="destructive"
-                  >
-                    3
-                  </Badge>
-                </Button>
-              )}
-
               {/* User Menu - Desktop */}
               {authUser ? (
                 <DropdownMenu>
@@ -245,12 +221,7 @@ export default function Navigation() {
                         <span>Profil Saya</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/settings" className="cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Pengaturan</span>
-                      </Link>
-                    </DropdownMenuItem>
+
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
@@ -320,6 +291,7 @@ export default function Navigation() {
                           <span>Profil Saya</span>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild></DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleLogout}
                         className="cursor-pointer text-destructive focus:text-destructive"
