@@ -18,7 +18,6 @@ import {
   Sun,
   Moon,
   ChevronDown,
-  Bell,
 } from "lucide-react";
 
 // shadcn Components
@@ -234,10 +233,10 @@ export default function Navigation() {
                 </DropdownMenu>
               ) : (
                 <div className="hidden sm:flex items-center gap-2">
-                  <Link href="/login">
+                  <Link href="/auth/login">
                     <Button variant="ghost">Masuk</Button>
                   </Link>
-                  <Link href="/register">
+                  <Link href="/auth/register">
                     <Button>Daftar</Button>
                   </Link>
                 </div>
@@ -302,7 +301,7 @@ export default function Navigation() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Link href="/login">
+                  <Link href="/auth/login">
                     <Button variant="ghost" size="sm" className="gap-1">
                       <LogIn className="h-4 w-4" />
                       <span>Masuk</span>
