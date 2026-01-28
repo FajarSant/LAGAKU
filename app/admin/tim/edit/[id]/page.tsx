@@ -362,7 +362,7 @@ export default function EditTimPage() {
           confirmButton: 'px-5 py-2 rounded'
         }
       }).then(() => {
-        router.push("/tim");
+        router.push("/admin/tim");
         router.refresh();
       });
 

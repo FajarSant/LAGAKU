@@ -8,6 +8,7 @@ import TimTable, { Tim } from "@/components/admin/tim/DataTable";
 import { toast } from "sonner";
 import DetailAnggotaModal from "@/components/admin/tim/DetailDialogAnggota";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 export default function TimPage() {
   const router = useRouter();
@@ -25,7 +26,8 @@ export default function TimPage() {
 
     const { data, error } = await supabase
       .from("tim")
-      .select(`
+      .select(
+        `
         id,
         nama,
         jurusan,
@@ -37,7 +39,8 @@ export default function TimPage() {
           nama
         ),
         anggota_tim(count)
-      `)
+      `,
+      )
       .order("dibuat_pada", { ascending: false });
 
     if (error) {
@@ -92,9 +95,9 @@ export default function TimPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Data Tim</h1>
-        <Button onClick={() => router.push("/tim/tambah")}>
-          Tambah Tim
-        </Button>
+        <Link href="/admin/tim/tambah">
+          <Button>Tambah Tim</Button>
+        </Link>
       </div>
 
       {/* LOADING SKELETON */}
@@ -110,7 +113,7 @@ export default function TimPage() {
           data={timList}
           onDelete={handleDelete}
           onDetail={handleDetail}
-          onEdit={(tim) => router.push(`/tim/edit/${tim.id}`)}
+          onEdit={(tim) => router.push(`/admin/tim/edit/${tim.id}`)}
         />
       )}
 

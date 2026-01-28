@@ -79,7 +79,7 @@ export default function UnauthorizedPage() {
               </a>
 
               <a
-                href="/login"
+                href="/auth/login"
                 className="group flex-1 rounded-xl border-2 border-primary/30 bg-background px-6 py-3 text-center text-sm font-medium text-primary transition-all duration-300 hover:scale-[1.02] hover:border-primary hover:bg-primary/5 active:scale-95"
               >
                 <span className="flex items-center justify-center gap-2">

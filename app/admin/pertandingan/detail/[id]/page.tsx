@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, RefreshCw, ArrowLeft, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 interface Acara {
   id: string;
@@ -161,7 +162,7 @@ export default function BracketPage() {
 
       for (const round of roundsData) {
         const roundMatches = (matchesData || []).filter(
-          (m) => m.round_id === round.id
+          (m) => m.round_id === round.id,
         );
 
         // Enrich matches with team data
@@ -181,10 +182,13 @@ export default function BracketPage() {
         }));
 
         // Calculate completion percentage for this round
-        const completedMatches = enrichedMatches.filter((m) => m.status === "selesai").length;
-        const completionPercentage = enrichedMatches.length > 0 
-          ? Math.round((completedMatches / enrichedMatches.length) * 100)
-          : 0;
+        const completedMatches = enrichedMatches.filter(
+          (m) => m.status === "selesai",
+        ).length;
+        const completionPercentage =
+          enrichedMatches.length > 0
+            ? Math.round((completedMatches / enrichedMatches.length) * 100)
+            : 0;
 
         roundsWithMatches.push({
           round: {
@@ -206,7 +210,7 @@ export default function BracketPage() {
         const lastRoundMatches = lastRound.matches;
 
         const allMatchesCompleted = lastRoundMatches.every(
-          (m) => m.status === "selesai" || m.is_bye
+          (m) => m.status === "selesai" || m.is_bye,
         );
 
         const winnersFromLastRound = lastRoundMatches
@@ -223,10 +227,10 @@ export default function BracketPage() {
               winnersFromLastRound.length === 1
                 ? "Final"
                 : winnersFromLastRound.length === 2
-                ? "Semifinal"
-                : winnersFromLastRound.length === 4
-                ? "Quarterfinal"
-                : `Round ${nextRoundUrutan}`,
+                  ? "Semifinal"
+                  : winnersFromLastRound.length === 4
+                    ? "Quarterfinal"
+                    : `Round ${nextRoundUrutan}`,
             urutan: nextRoundUrutan,
             acara_id: acaraId,
             dibuat_pada: new Date().toISOString(),
@@ -271,24 +275,27 @@ export default function BracketPage() {
       // 7. Calculate statistics
       const totalMatches = roundsWithMatches.reduce(
         (sum, round) => sum + round.matches.length,
-        0
+        0,
       );
 
       const completedMatches = roundsWithMatches.reduce(
         (sum, round) =>
           sum + round.matches.filter((m) => m.status === "selesai").length,
-        0
+        0,
       );
 
       const byeMatches = roundsWithMatches.reduce(
         (sum, round) =>
-          sum + round.matches.filter((m) => m.is_bye || !m.tim_b_id || !m.tim_a_id).length,
-        0
+          sum +
+          round.matches.filter((m) => m.is_bye || !m.tim_b_id || !m.tim_a_id)
+            .length,
+        0,
       );
 
-      const progressPercentage = totalMatches > 0 
-        ? Math.round((completedMatches / totalMatches) * 100)
-        : 0;
+      const progressPercentage =
+        totalMatches > 0
+          ? Math.round((completedMatches / totalMatches) * 100)
+          : 0;
 
       setBracketRounds(roundsWithMatches);
       setStats({
@@ -328,28 +335,32 @@ export default function BracketPage() {
 
   const getMatchResult = (match: Pertandingan) => {
     if (match.status !== "selesai") return null;
-    
+
     if (match.is_bye) {
       return (
-        <Badge 
-          variant="outline" 
+        <Badge
+          variant="outline"
           className="bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
         >
           BYE
         </Badge>
       );
     }
-    
+
     if (match.skor_tim_a !== null && match.skor_tim_b !== null) {
       if (match.skor_tim_a > match.skor_tim_b) {
-        return <Badge className="bg-green-600 dark:bg-green-700">Tim A Menang</Badge>;
+        return (
+          <Badge className="bg-green-600 dark:bg-green-700">Tim A Menang</Badge>
+        );
       } else if (match.skor_tim_b > match.skor_tim_a) {
-        return <Badge className="bg-green-600 dark:bg-green-700">Tim B Menang</Badge>;
+        return (
+          <Badge className="bg-green-600 dark:bg-green-700">Tim B Menang</Badge>
+        );
       } else {
         return <Badge className="bg-yellow-600 dark:bg-yellow-700">Seri</Badge>;
       }
     }
-    
+
     return null;
   };
 
@@ -357,7 +368,7 @@ export default function BracketPage() {
     const isBye = match.is_bye;
     const hasTeamA = !!match.tim_a_id;
     const hasTeamB = !!match.tim_b_id;
-    
+
     // Jika BYE dan ini Tim B, maka tampilkan "BYE"
     if (isBye && !isTeamA) {
       return {
@@ -367,10 +378,10 @@ export default function BracketPage() {
         color: "text-gray-600 dark:text-gray-400",
         bgColor: "bg-gray-100 dark:bg-gray-800",
         darkBgColor: "dark:bg-gray-800",
-        italic: true
+        italic: true,
       };
     }
-    
+
     // Jika BYE dan ini Tim A, tampilkan nama tim
     if (isBye && isTeamA && hasTeamA) {
       return {
@@ -380,10 +391,10 @@ export default function BracketPage() {
         color: "text-blue-700 dark:text-blue-400",
         bgColor: "bg-blue-100 dark:bg-blue-900/30",
         darkBgColor: "dark:bg-blue-900/30",
-        italic: false
+        italic: false,
       };
     }
-    
+
     // Jika tidak ada tim B (BYE)
     if (!hasTeamB && !isTeamA) {
       return {
@@ -393,10 +404,10 @@ export default function BracketPage() {
         color: "text-gray-600 dark:text-gray-400",
         bgColor: "bg-gray-100 dark:bg-gray-800",
         darkBgColor: "dark:bg-gray-800",
-        italic: true
+        italic: true,
       };
     }
-    
+
     // Jika tidak ada tim A (BYE)
     if (!hasTeamA && isTeamA) {
       return {
@@ -406,22 +417,20 @@ export default function BracketPage() {
         color: "text-gray-600 dark:text-gray-400",
         bgColor: "bg-gray-100 dark:bg-gray-800",
         darkBgColor: "dark:bg-gray-800",
-        italic: true
+        italic: true,
       };
     }
-    
+
     // Tim normal
     const team = isTeamA ? match.tim_a : match.tim_b;
-    const teamColor = isTeamA 
-      ? "text-blue-700 dark:text-blue-400" 
+    const teamColor = isTeamA
+      ? "text-blue-700 dark:text-blue-400"
       : "text-red-700 dark:text-red-400";
-    const teamBgColor = isTeamA 
-      ? "bg-blue-100 dark:bg-blue-900/30" 
+    const teamBgColor = isTeamA
+      ? "bg-blue-100 dark:bg-blue-900/30"
       : "bg-red-100 dark:bg-red-900/30";
-    const darkBgColor = isTeamA 
-      ? "dark:bg-blue-900/30" 
-      : "dark:bg-red-900/30";
-    
+    const darkBgColor = isTeamA ? "dark:bg-blue-900/30" : "dark:bg-red-900/30";
+
     return {
       name: team?.nama || (isTeamA ? "Tim A" : "Tim B"),
       displayName: team?.nama || (isTeamA ? "Tim A" : "Tim B"),
@@ -429,7 +438,7 @@ export default function BracketPage() {
       color: teamColor,
       bgColor: teamBgColor,
       darkBgColor: darkBgColor,
-      italic: false
+      italic: false,
     };
   };
 
@@ -439,7 +448,9 @@ export default function BracketPage() {
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Memuat data bracket...</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Memuat data bracket...
+            </p>
           </div>
         </div>
       </div>
@@ -451,12 +462,19 @@ export default function BracketPage() {
       <div className="p-6">
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error || "Acara tidak ditemukan"}</AlertDescription>
+          <AlertDescription>
+            {error || "Acara tidak ditemukan"}
+          </AlertDescription>
         </Alert>
-        <Button onClick={() => router.push("/pertandingan")} variant="outline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Kembali ke Daftar
-        </Button>
+       <Link href="/admin/pertandingan">
+            <Button
+              variant="ghost"
+              className="p-0 h-auto hover:bg-transparent dark:hover:bg-transparent"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              <span className="text-sm">Kembali</span>
+            </Button>
+          </Link>
       </div>
     );
   }
@@ -466,14 +484,15 @@ export default function BracketPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-2">
-          <Button
-            variant="ghost"
-            onClick={() => router.push("/pertandingan")}
-            className="p-0 h-auto hover:bg-transparent dark:hover:bg-transparent"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            <span className="text-sm">Kembali</span>
-          </Button>
+          <Link href="/admin/pertandingan">
+            <Button
+              variant="ghost"
+              className="p-0 h-auto hover:bg-transparent dark:hover:bg-transparent"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              <span className="text-sm">Kembali</span>
+            </Button>
+          </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
             Bracket Pertandingan
           </h1>
@@ -492,8 +511,8 @@ export default function BracketPage() {
           <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
             ID: {acara.id.substring(0, 8)}...
           </div>
-          <Button 
-            onClick={fetchBracketData} 
+          <Button
+            onClick={fetchBracketData}
             variant="outline"
             size="sm"
             className="border-gray-300 dark:border-gray-700"
@@ -516,7 +535,7 @@ export default function BracketPage() {
             </span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2.5">
-            <div 
+            <div
               className="bg-blue-600 dark:bg-blue-500 h-2.5 rounded-full transition-all duration-300"
               style={{ width: `${stats.progressPercentage}%` }}
             ></div>
@@ -533,7 +552,9 @@ export default function BracketPage() {
                 <div className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {stats.rounds}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Babak</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Total Babak
+                </p>
               </div>
               <div className="text-blue-500 dark:text-blue-400">
                 <TrendingUp className="h-5 w-5" />
@@ -541,7 +562,7 @@ export default function BracketPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center justify-between">
@@ -549,17 +570,23 @@ export default function BracketPage() {
                 <div className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400">
                   {stats.totalMatches}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Pertandingan</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Total Pertandingan
+                </p>
               </div>
               <div className="text-green-500 dark:text-green-400">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
                 </svg>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center justify-between">
@@ -567,17 +594,27 @@ export default function BracketPage() {
                 <div className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {stats.completedMatches}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Selesai</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Selesai
+                </p>
               </div>
               <div className="text-purple-500 dark:text-purple-400">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center justify-between">
@@ -585,17 +622,23 @@ export default function BracketPage() {
                 <div className="text-lg md:text-2xl font-bold text-orange-600 dark:text-orange-400">
                   {stats.totalTeams}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Tim</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Total Tim
+                </p>
               </div>
               <div className="text-orange-500 dark:text-orange-400">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                 </svg>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm">
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center justify-between">
@@ -603,11 +646,21 @@ export default function BracketPage() {
                 <div className="text-lg md:text-2xl font-bold text-gray-600 dark:text-gray-400">
                   {stats.byeMatches}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">BYE</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  BYE
+                </p>
               </div>
               <div className="text-gray-500 dark:text-gray-400">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
             </div>
@@ -620,8 +673,18 @@ export default function BracketPage() {
         <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700">
           <CardContent className="p-8 text-center">
             <div className="text-gray-400 dark:text-gray-500 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                className="w-16 h-16 mx-auto"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
@@ -630,8 +693,10 @@ export default function BracketPage() {
             <p className="text-gray-500 dark:text-gray-400 mb-4">
               Mulai dengan membuat pertandingan untuk acara ini
             </p>
-            <Button 
-              onClick={() => router.push(`/pertandingan/tambah?acara=${acaraId}`)}
+            <Button
+              onClick={() =>
+                router.push(`/pertandingan/tambah?acara=${acaraId}`)
+              }
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
             >
               Buat Pertandingan
@@ -642,15 +707,17 @@ export default function BracketPage() {
         <div className="space-y-6">
           {bracketRounds.map((bracketRound, index) => {
             const isLatestRound = index === 0;
-            
+
             return (
               <div key={bracketRound.round.id} className="space-y-3">
                 {/* Round Header dengan indikator round terbaru */}
-                <div className={`flex items-center justify-between p-4 rounded-lg ${
-                  isLatestRound 
-                    ? "bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-l-4 border-blue-500 dark:border-blue-400" 
-                    : "bg-gray-50 dark:bg-gray-900/50"
-                }`}>
+                <div
+                  className={`flex items-center justify-between p-4 rounded-lg ${
+                    isLatestRound
+                      ? "bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-l-4 border-blue-500 dark:border-blue-400"
+                      : "bg-gray-50 dark:bg-gray-900/50"
+                  }`}
+                >
                   <div className="flex items-center gap-3">
                     {isLatestRound && (
                       <div className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded">
@@ -659,16 +726,21 @@ export default function BracketPage() {
                     )}
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full ${
-                          isLatestRound 
-                            ? "bg-blue-600 dark:bg-blue-500 text-white" 
-                            : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                        } text-xs font-bold`}>
+                        <span
+                          className={`inline-flex items-center justify-center w-6 h-6 rounded-full ${
+                            isLatestRound
+                              ? "bg-blue-600 dark:bg-blue-500 text-white"
+                              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                          } text-xs font-bold`}
+                        >
                           {bracketRound.round.urutan}
                         </span>
                         {bracketRound.round.nama}
                         {bracketRound.isPlaceholder && (
-                          <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          <Badge
+                            variant="secondary"
+                            className="ml-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                          >
                             Akan Datang
                           </Badge>
                         )}
@@ -678,9 +750,11 @@ export default function BracketPage() {
                           {bracketRound.matches.length} pertandingan
                         </p>
                         <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-green-500 dark:bg-green-400 rounded-full"
-                            style={{ width: `${bracketRound.completedPercentage}%` }}
+                            style={{
+                              width: `${bracketRound.completedPercentage}%`,
+                            }}
                           ></div>
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -690,11 +764,11 @@ export default function BracketPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={`${
-                        isLatestRound 
-                          ? "border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300" 
+                        isLatestRound
+                          ? "border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300"
                           : "border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                       }`}
                     >
@@ -710,46 +784,68 @@ export default function BracketPage() {
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                            <TableHead className="w-12 text-gray-700 dark:text-gray-300 font-semibold">No</TableHead>
-                            <TableHead className="w-1/4 text-gray-700 dark:text-gray-300 font-semibold">Tim A</TableHead>
-                            <TableHead className="w-1/4 text-gray-700 dark:text-gray-300 font-semibold">Tim B</TableHead>
-                            <TableHead className="w-1/6 text-center text-gray-700 dark:text-gray-300 font-semibold">Skor</TableHead>
-                            <TableHead className="w-1/6 text-gray-700 dark:text-gray-300 font-semibold">Status</TableHead>
-                            <TableHead className="w-1/6 text-gray-700 dark:text-gray-300 font-semibold">Hasil</TableHead>
-                            <TableHead className="w-1/6 text-right text-gray-700 dark:text-gray-300 font-semibold">Aksi</TableHead>
+                            <TableHead className="w-12 text-gray-700 dark:text-gray-300 font-semibold">
+                              No
+                            </TableHead>
+                            <TableHead className="w-1/4 text-gray-700 dark:text-gray-300 font-semibold">
+                              Tim A
+                            </TableHead>
+                            <TableHead className="w-1/4 text-gray-700 dark:text-gray-300 font-semibold">
+                              Tim B
+                            </TableHead>
+                            <TableHead className="w-1/6 text-center text-gray-700 dark:text-gray-300 font-semibold">
+                              Skor
+                            </TableHead>
+                            <TableHead className="w-1/6 text-gray-700 dark:text-gray-300 font-semibold">
+                              Status
+                            </TableHead>
+                            <TableHead className="w-1/6 text-gray-700 dark:text-gray-300 font-semibold">
+                              Hasil
+                            </TableHead>
+                            <TableHead className="w-1/6 text-right text-gray-700 dark:text-gray-300 font-semibold">
+                              Aksi
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {bracketRound.matches.map((match, matchIndex) => {
                             const teamAInfo = getTeamInfo(match, true);
                             const teamBInfo = getTeamInfo(match, false);
-                            
+
                             return (
-                              <TableRow 
-                                key={match.id} 
+                              <TableRow
+                                key={match.id}
                                 className={`hover:bg-gray-50 dark:hover:bg-gray-900/30 border-b border-gray-100 dark:border-gray-800 ${
-                                  matchIndex === bracketRound.matches.length - 1 ? 'border-b-0' : ''
+                                  matchIndex === bracketRound.matches.length - 1
+                                    ? "border-b-0"
+                                    : ""
                                 }`}
                               >
                                 <TableCell className="font-medium text-gray-900 dark:text-gray-100">
                                   {matchIndex + 1}
                                 </TableCell>
-                                
+
                                 {/* Tim A */}
                                 <TableCell>
                                   <div className="flex items-center gap-2">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${teamAInfo.bgColor} ${teamAInfo.darkBgColor}`}>
-                                      <span className={`text-sm font-medium ${teamAInfo.color}`}>
+                                    <div
+                                      className={`w-8 h-8 rounded-full flex items-center justify-center ${teamAInfo.bgColor} ${teamAInfo.darkBgColor}`}
+                                    >
+                                      <span
+                                        className={`text-sm font-medium ${teamAInfo.color}`}
+                                      >
                                         {teamAInfo.displayName.charAt(0)}
                                       </span>
                                     </div>
                                     <div className="min-w-0">
-                                      <span className={`font-medium truncate block ${teamAInfo.color} ${teamAInfo.italic ? 'italic' : ''}`}>
+                                      <span
+                                        className={`font-medium truncate block ${teamAInfo.color} ${teamAInfo.italic ? "italic" : ""}`}
+                                      >
                                         {teamAInfo.displayName}
                                       </span>
                                       {teamAInfo.isBye && match.is_bye && (
-                                        <Badge 
-                                          variant="outline" 
+                                        <Badge
+                                          variant="outline"
                                           className="mt-0.5 text-[10px] bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
                                         >
                                           BYE
@@ -758,22 +854,28 @@ export default function BracketPage() {
                                     </div>
                                   </div>
                                 </TableCell>
-                                
+
                                 {/* Tim B */}
                                 <TableCell>
                                   <div className="flex items-center gap-2">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${teamBInfo.bgColor} ${teamBInfo.darkBgColor}`}>
-                                      <span className={`text-sm font-medium ${teamBInfo.color}`}>
+                                    <div
+                                      className={`w-8 h-8 rounded-full flex items-center justify-center ${teamBInfo.bgColor} ${teamBInfo.darkBgColor}`}
+                                    >
+                                      <span
+                                        className={`text-sm font-medium ${teamBInfo.color}`}
+                                      >
                                         {teamBInfo.displayName.charAt(0)}
                                       </span>
                                     </div>
                                     <div className="min-w-0">
-                                      <span className={`font-medium truncate block ${teamBInfo.color} ${teamBInfo.italic ? 'italic' : ''}`}>
+                                      <span
+                                        className={`font-medium truncate block ${teamBInfo.color} ${teamBInfo.italic ? "italic" : ""}`}
+                                      >
                                         {teamBInfo.displayName}
                                       </span>
                                       {teamBInfo.isBye && !match.is_bye && (
-                                        <Badge 
-                                          variant="outline" 
+                                        <Badge
+                                          variant="outline"
                                           className="mt-0.5 text-[10px] bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
                                         >
                                           BYE
@@ -782,41 +884,53 @@ export default function BracketPage() {
                                     </div>
                                   </div>
                                 </TableCell>
-                                
+
                                 {/* Skor */}
                                 <TableCell className="text-center">
                                   <div className="font-bold text-lg text-gray-900 dark:text-gray-100">
                                     {match.skor_tim_a ?? "-"}
-                                    <span className="mx-2 text-gray-400 dark:text-gray-500">:</span>
+                                    <span className="mx-2 text-gray-400 dark:text-gray-500">
+                                      :
+                                    </span>
                                     {match.skor_tim_b ?? "-"}
                                   </div>
                                   {(teamAInfo.isBye || teamBInfo.isBye) && (
                                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                      {teamAInfo.isBye ? "Tim A BYE" : teamBInfo.isBye ? "Tim B BYE" : "BYE"}
+                                      {teamAInfo.isBye
+                                        ? "Tim A BYE"
+                                        : teamBInfo.isBye
+                                          ? "Tim B BYE"
+                                          : "BYE"}
                                     </div>
                                   )}
                                 </TableCell>
-                                
+
                                 {/* Status */}
                                 <TableCell>
-                                  <Badge className={`${getStatusColor(match.status)} text-xs font-medium`}>
+                                  <Badge
+                                    className={`${getStatusColor(match.status)} text-xs font-medium`}
+                                  >
                                     {match.status}
                                   </Badge>
                                 </TableCell>
-                                
+
                                 {/* Hasil */}
-                                <TableCell>
-                                  {getMatchResult(match)}
-                                </TableCell>
-                                
+                                <TableCell>{getMatchResult(match)}</TableCell>
+
                                 {/* Aksi */}
                                 <TableCell className="text-right">
                                   <div className="flex justify-end">
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => router.push(`/pertandingan/edit/${match.id}`)}
-                                      disabled={match.id.includes('placeholder')}
+                                      onClick={() =>
+                                        router.push(
+                                          `/pertandingan/edit/${match.id}`,
+                                        )
+                                      }
+                                      disabled={match.id.includes(
+                                        "placeholder",
+                                      )}
                                       className="border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
                                     >
                                       Edit
@@ -850,31 +964,45 @@ export default function BracketPage() {
               <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
                 Selesai
               </Badge>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Pertandingan sudah selesai</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Pertandingan sudah selesai
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
                 Berlangsung
               </Badge>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Pertandingan sedang berlangsung</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Pertandingan sedang berlangsung
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800">
                 Dijadwalkan
               </Badge>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Pertandingan akan datang</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Pertandingan akan datang
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <span className="text-xs font-medium text-blue-700 dark:text-blue-400">A</span>
+                <span className="text-xs font-medium text-blue-700 dark:text-blue-400">
+                  A
+                </span>
               </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Tim A (Home)</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Tim A (Home)
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">B</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                  B
+                </span>
               </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400">Tim BYE</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Tim BYE
+              </span>
             </div>
           </div>
         </CardContent>

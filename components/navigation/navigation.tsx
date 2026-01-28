@@ -18,6 +18,8 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  LayoutDashboard,
+  Shield,
 } from "lucide-react";
 
 // shadcn Components
@@ -88,6 +90,7 @@ export default function Navigation() {
   const username = profile?.nama || authUser?.email?.split("@")[0] || "User";
   const userEmail = profile?.email || authUser?.email || "";
   const userRole = profile?.peran || "mahasiswa";
+  const isAdmin = userRole === "admin" || userRole === "superadmin";
 
   const avatarUrl =
     profile?.avatar_url ||
@@ -161,6 +164,21 @@ export default function Navigation() {
                     {item.label}
                   </Link>
                 ))}
+                
+                {/* Dashboard Link hanya untuk Admin di Desktop Nav */}
+                {isAdmin && (
+                  <Link
+                    href="/admin/dashboard"
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent ${
+                      isActive("/admin/dashboard")
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                  </Link>
+                )}
               </nav>
             </div>
 
@@ -194,9 +212,14 @@ export default function Navigation() {
                       </Avatar>
                       <div className="hidden lg:flex flex-col items-start">
                         <span className="text-sm font-medium">{username}</span>
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {userRole}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground capitalize">
+                            {userRole}
+                          </span>
+                          {isAdmin && (
+                            <Shield className="h-3 w-3 text-primary" />
+                          )}
+                        </div>
                       </div>
                       <ChevronDown className="h-4 w-4 opacity-50 hidden lg:inline" />
                     </Button>
@@ -204,15 +227,37 @@ export default function Navigation() {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {username}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium leading-none">
+                            {username}
+                          </p>
+                          {isAdmin && (
+                            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Admin
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs leading-none text-muted-foreground">
                           {userEmail}
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    
+                    {/* Menu Item Dashboard hanya untuk Admin */}
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link 
+                          href="/admin/dashboard" 
+                          className="cursor-pointer flex items-center"
+                        >
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          <span>Dashboard Admin</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="cursor-pointer">
                         <UserIcon className="mr-2 h-4 w-4" />
@@ -269,20 +314,46 @@ export default function Navigation() {
                             {username.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
+                        {isAdmin && (
+                          <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary border-2 border-background flex items-center justify-center">
+                            <Shield className="h-3 w-3 text-white" />
+                          </div>
+                        )}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>
                         <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">
-                            {username}
-                          </p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium leading-none">
+                              {username}
+                            </p>
+                            {isAdmin && (
+                              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                                Admin
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs leading-none text-muted-foreground capitalize">
                             {userRole}
                           </p>
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      
+                      {/* Menu Item Dashboard hanya untuk Admin di Mobile */}
+                      {isAdmin && (
+                        <DropdownMenuItem asChild>
+                          <Link 
+                            href="/admin/dashboard" 
+                            className="cursor-pointer"
+                          >
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>Dashboard Admin</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      
                       <DropdownMenuItem asChild>
                         <Link href="/profile" className="cursor-pointer">
                           <UserIcon className="mr-2 h-4 w-4" />
@@ -338,6 +409,29 @@ export default function Navigation() {
               </span>
             </Link>
           ))}
+          
+          {/* Dashboard Item hanya untuk Admin di Bottom Nav */}
+          {isAdmin && (
+            <Link
+              href="/admin/dashboard"
+              className={`flex flex-col items-center justify-center flex-1 min-w-0 px-2 py-2 transition-all ${
+                isActive("/admin/dashboard")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <div
+                className={`p-2 rounded-full ${
+                  isActive("/admin/dashboard") ? "bg-primary/10" : ""
+                }`}
+              >
+                <LayoutDashboard className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-medium mt-1 truncate w-full text-center">
+                Dashboard
+              </span>
+            </Link>
+          )}
         </div>
       </div>
 

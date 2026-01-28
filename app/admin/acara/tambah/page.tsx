@@ -229,7 +229,7 @@ export default function TambahAcaraPage() {
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          router.push("/acara");
+          router.push("/admin/acara");
           router.refresh();
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           // Reset form untuk membuat turnamen baru

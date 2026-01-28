@@ -40,27 +40,26 @@ interface MenuItem {
 
 // MENU UTAMA
 const menuUtama: MenuItem[] = [
-  { title: "Dashboard", url: "/dashboard", icon: FiHome },
-  { title: "Acara", url: "/acara", icon: FiCalendar },
-  { title: "Tim", url: "/tim", icon: FiLayers },
-  { title: "Peserta", url: "/peserta", icon: FiUserCheck },
+  { title: "Statistik", url: "/admin/dashboard", icon: FiBarChart2 },
+  { title: "Acara", url: "/admin/acara", icon: FiCalendar },
+  { title: "Tim", url: "/admin/tim", icon: FiLayers },
+  { title: "Peserta", url: "/admin/peserta", icon: FiUserCheck },
 ];
 
 // SISTEM PERTANDINGAN (berdasarkan tipe_acara)
 const menuPertandingan: MenuItem[] = [
-  { title: "Semua Pertandingan", url: "/pertandingan", icon: FiGrid },
-  { title: "Bracket Pertandingan", url: "/bracket", icon: FiCrosshair },
+  { title: "Semua Pertandingan", url: "/admin/pertandingan", icon: FiGrid },
+  { title: "Bracket Pertandingan", url: "/admin/bracket", icon: FiCrosshair },
 ];
 
 // MANAJEMEN
-const menuManajemen: MenuItem[] = [
-  { title: "Pengguna", url: "/pengguna", icon: FiUsers },
-  { title: "Statistik", url: "/statistik", icon: FiBarChart2 },
-];
+// const menuManajemen: MenuItem[] = [
+//   { title: "Pengguna", url: "/admin/pengguna", icon: FiUsers },
+// ];
 
 // PENGATURAN
 const menuPengaturan: MenuItem[] = [
-  { title: "Pengaturan", url: "/pengaturan", icon: FiSettings },
+  // { title: "Pengaturan", url: "/pengaturan", icon: FiSettings },
 ];
 
 //
@@ -177,7 +176,7 @@ export function SidebarAdmin() {
         </SidebarGroup>
 
         {/* MANAJEMEN */}
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-1">
             Manajemen
           </SidebarGroupLabel>
@@ -188,10 +187,10 @@ export function SidebarAdmin() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
 
         {/* PENGATURAN */}
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-1">
             Pengaturan
           </SidebarGroupLabel>
@@ -202,7 +201,7 @@ export function SidebarAdmin() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
       </SidebarContent>
     </Sidebar>
   );

@@ -36,7 +36,7 @@ export default function AcaraHeader({
         </div>
         
         <Button asChild className="gap-2">
-          <Link href="/acara/tambah">
+          <Link href="/admin/acara/tambah">
             <FiPlus className="h-4 w-4" />
             Tambah Acara
           </Link>

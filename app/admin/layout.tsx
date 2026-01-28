@@ -17,7 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (!isLoading) {
       if (!user) {
         console.log('No user, redirecting to login');
-        router.push("/login");
+        router.push("/auth/login");
       } else if (!isAdmin) {
         console.log('Not admin, redirecting to unauthorized');
         router.push("/unauthorized");

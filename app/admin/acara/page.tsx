@@ -110,7 +110,7 @@ export default function AcaraPage() {
               <EmptyState
                 hasSearch={!!search}
                 hasFilter={selectedFilter !== "all"}
-                onAddNew={() => (window.location.href = "/acara/tambah")}
+                onAddNew={() => (window.location.href = "/admin/acara/tambah")}
               />
             )}
           </>

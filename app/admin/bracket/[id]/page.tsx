@@ -259,7 +259,7 @@ export default function BracketPage() {
               {error || "Acara tidak ditemukan"}
             </AlertDescription>
           </Alert>
-          <Button onClick={() => router.push("/pertandingan/bracket")}>
+          <Button onClick={() => router.push("/admin/pertandingan/bracket")}>
             Kembali ke Daftar Bracket
           </Button>
         </div>
@@ -272,7 +272,7 @@ export default function BracketPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         <BracketHeader
           acara={acara}
-          onBack={() => router.push("/bracket")}
+          onBack={() => router.push("/admin/bracket")}
           onRefresh={fetchBracketData}
           loading={loading}
         />

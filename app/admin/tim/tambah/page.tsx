@@ -252,7 +252,7 @@ export default function TambahTimPage() {
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          router.push(`/tim`);
+          router.push(`/admin/tim`);
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           // Reset form untuk membuat tim baru
           reset({

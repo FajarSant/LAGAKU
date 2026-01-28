@@ -142,7 +142,7 @@ export default function AcaraCard({ acara }: AcaraCardProps) {
             variant="outline" 
             className="w-full justify-start gap-2"
           >
-            <Link href={`/acara/${acara.id}`}>
+            <Link href={`/admin/acara/${acara.id}`}>
               <FiEye className="h-4 w-4" />
               Lihat Detail
             </Link>
@@ -153,7 +153,7 @@ export default function AcaraCard({ acara }: AcaraCardProps) {
               asChild
               className="flex-1 gap-2"
             >
-              <Link href={`/acara/edit/${acara.id}`}>
+              <Link href={`/admin/acara/edit/${acara.id}`}>
                 <FiEdit className="h-4 w-4" />
                 Edit
               </Link>

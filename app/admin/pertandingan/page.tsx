@@ -43,7 +43,7 @@ export default function PertandinganPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">Manajemen Pertandingan</h1>
-        <Link href="/pertandingan/tambah">
+        <Link href="/admin/pertandingan/tambah">
           <Button>Generate Pertandingan</Button>
         </Link>
       </div>
@@ -58,7 +58,7 @@ export default function PertandinganPage() {
               <span className="text-sm text-muted-foreground">
                 Total pertandingan: {acara.total_pertandingan}
               </span>
-              <Link href={`/pertandingan/detail/${acara.id}`}>
+              <Link href={`/admin/pertandingan/detail/${acara.id}`}>
                 <Button variant="outline">Lihat Detail</Button>
               </Link>
             </CardContent>

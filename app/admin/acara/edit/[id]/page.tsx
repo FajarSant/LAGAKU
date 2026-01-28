@@ -399,7 +399,7 @@ export default function EditAcaraPage() {
           confirmButton: "px-5 py-2 rounded",
         },
       }).then(() => {
-        router.push("/acara");
+        router.push("/admin/acara");
         router.refresh();
       });
     } catch (error: any) {
