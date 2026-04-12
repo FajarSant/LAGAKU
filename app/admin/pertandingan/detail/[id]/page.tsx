@@ -466,15 +466,15 @@ export default function BracketPage() {
             {error || "Acara tidak ditemukan"}
           </AlertDescription>
         </Alert>
-       <Link href="/admin/pertandingan">
-            <Button
-              variant="ghost"
-              className="p-0 h-auto hover:bg-transparent dark:hover:bg-transparent"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              <span className="text-sm">Kembali</span>
-            </Button>
-          </Link>
+        <Link href="/admin/pertandingan">
+          <Button
+            variant="ghost"
+            className="p-0 h-auto hover:bg-transparent dark:hover:bg-transparent"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            <span className="text-sm">Kembali</span>
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -693,14 +693,11 @@ export default function BracketPage() {
             <p className="text-gray-500 dark:text-gray-400 mb-4">
               Mulai dengan membuat pertandingan untuk acara ini
             </p>
-            <Button
-              onClick={() =>
-                router.push(`/pertandingan/tambah?acara=${acaraId}`)
-              }
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-            >
-              Buat Pertandingan
-            </Button>
+            <Link href={`/admin/pertandingan/tambah?acara=${acaraId}`}>
+              <Button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600">
+                Buat Pertandingan
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       ) : (

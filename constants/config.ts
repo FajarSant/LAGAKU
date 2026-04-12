@@ -12,6 +12,7 @@ export interface Acara {
   deskripsi: string | null;
   tipe_acara: "SISTEM_GUGUR" | "SISTEM_KOMPETISI" | "SISTEM_CAMPURAN";
   dibuat_pada: string;
+  dibuat_oleh: string | null;
   lokasi?: string;
   tanggal_mulai?: string;
   tanggal_selesai?: string;

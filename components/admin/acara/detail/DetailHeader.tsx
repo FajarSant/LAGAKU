@@ -78,7 +78,7 @@ export default function DetailHeader({
               asChild
               className="bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-5 rounded-xl gap-2 dark:from-blue-500 dark:to-cyan-600"
             >
-              <Link href={`/acara/edit/${acara.id}`}>
+              <Link href={`/admin/acara/edit/${acara.id}`}>
                 <FiEdit className="w-4 h-4" />
                 Edit
               </Link>
