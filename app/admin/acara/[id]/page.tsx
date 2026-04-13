@@ -211,7 +211,7 @@ export default function DetailAcaraPage() {
           },
         });
 
-        router.push("/acara");
+        router.push("/admin/acara");
       } catch (error) {
         Swal.fire({
           title: '<span class="text-white text-xl font-semibold">Gagal!</span>',

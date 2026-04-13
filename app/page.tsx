@@ -174,8 +174,6 @@ export default function HomePage() {
                 Platform turnamen terpadu untuk mengatur, ikuti, dan saksikan
                 pertandingan seru dengan teknologi terkini
               </p>
-
-              
             </div>
 
             {/* Stats Grid - Diperbaiki untuk light mode */}
@@ -194,35 +192,39 @@ export default function HomePage() {
             </div>
 
             {/* CTA Section */}
-            <Card className="border-0 shadow-xl bg-linear-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm">
-              <CardContent className="p-6 md:p-8">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                  <div>
-                    <CardTitle className="text-xl md:text-2xl mb-2 flex items-center">
-                      <Sparkles className="w-5 h-5 mr-2 text-blue-500" />
-                      Siap untuk Kompetisi?
+            <Card className="border-0 shadow-xl bg-linear-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm overflow-hidden">
+              <CardContent className="p-4 sm:p-6 md:p-8">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                  {/* Left Section - Text Content */}
+                  <div className="flex-1 text-center lg:text-left">
+                    <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 flex items-center justify-center lg:justify-start">
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500 shrink-0" />
+                      <span>Siap untuk Kompetisi?</span>
                     </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-300">
+                    <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0">
                       Bergabung dengan ratusan tim dan ribuan pemain dalam
                       turnamen seru. Daftar sekarang dan raih kemenangan!
                     </CardDescription>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Link href="/tournaments" passHref>
+
+                  {/* Right Section - Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 shrink-0">
+                    <Link href="/tournaments" className="w-full sm:w-auto">
                       <Button
                         size="lg"
-                        className="px-6 py-5 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg group"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-4 sm:py-5 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg group text-sm sm:text-base"
                       >
-                        <Trophy className="mr-2 w-4 h-4 group-hover:animate-bounce" />
-                        Daftar Turnamen
-                        <ArrowRight className="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                        <Trophy className="mr-2 w-3 h-3 sm:w-4 sm:h-4 group-hover:animate-bounce" />
+                        <span>Daftar Turnamen</span>
+                        <ArrowRight className="ml-2 w-3 h-3 sm:w-4 sm:h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                       </Button>
                     </Link>
-                    <Link href="/guide" passHref>
+
+                    <Link href="/guide" className="w-full sm:w-auto">
                       <Button
                         size="lg"
                         variant="outline"
-                        className="px-6 py-5 border-2 border-gray-300 dark:border-gray-600"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-4 sm:py-5 border-2 border-gray-300 dark:border-gray-600 text-sm sm:text-base"
                       >
                         Lihat Panduan
                       </Button>

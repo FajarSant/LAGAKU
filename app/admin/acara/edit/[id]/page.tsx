@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar, MapPin, Link, Loader2, Shield } from "lucide-react";
+import { Loader2, Shield } from "lucide-react";
 
 interface AcaraForm {
   nama: string;
@@ -28,10 +28,11 @@ export default function EditAcaraPage() {
   const params = useParams();
   const acaraId = params.id as string;
 
-  const [loading, setLoading] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingData, setLoadingData] = useState<boolean>(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [initialForm, setInitialForm] = useState<AcaraForm | null>(null);
 
   const [form, setForm] = useState<AcaraForm>({
     nama: "",
@@ -49,139 +50,102 @@ export default function EditAcaraPage() {
     }
   }, [acaraId]);
 
-  const checkAdminAccess = async () => {
+  const checkAdminAccess = async (): Promise<void> => {
     try {
       setLoadingData(true);
 
-      // 1. Get current session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
-        Swal.fire({
+        await Swal.fire({
           title: "Login Diperlukan",
           text: "Silakan login terlebih dahulu",
           icon: "warning",
           confirmButtonText: "Login",
-        }).then(() => router.push("/login"));
+        });
+        router.push("/login");
         return;
       }
 
-      console.log("User email:", session.user.email);
-
-      // 2. Cek user di tabel "pengguna" (bukan "users")
       const { data: userData, error: userError } = await supabase
-        .from("pengguna")  // ✅ Perbaiki: "pengguna" bukan "users"
-        .select("id, email, peran")  // ✅ Perbaiki: "peran" bukan "role"
+        .from("pengguna")
+        .select("id, email, peran")
         .eq("email", session.user.email)
         .maybeSingle();
 
-      console.log("User data:", userData);
-      console.log("User error:", userError);
-
-      // 3. Jika user tidak ditemukan, buat record baru
       if (userError || !userData) {
-        console.log("User not found in pengguna table, creating...");
-        
-        // Insert user ke tabel pengguna
-        const { data: newUser, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from("pengguna")
           .insert([
             { 
               id: session.user.id,
               email: session.user.email,
               nama: session.user.user_metadata?.full_name || session.user.email,
-              peran: "mahasiswa" // Default role
+              peran: "mahasiswa"
             }
-          ])
-          .select()
-          .single();
+          ]);
 
         if (insertError) {
-          console.error("Failed to create user:", insertError);
-          Swal.fire({
+          await Swal.fire({
             title: "Error",
             text: "Gagal memverifikasi akses user",
             icon: "error",
-          }).then(() => router.push("/acara"));
+          });
+          router.push("/acara");
           return;
         }
 
-        // Cek apakah admin berdasarkan email (atau bisa dari metadata)
-        const isUserAdmin = session.user.email === "admin@example.com"; // Ganti dengan email admin
+        const isUserAdmin = session.user.email === "admin@example.com";
         setIsAdmin(isUserAdmin);
 
         if (!isUserAdmin) {
-          Swal.fire({
+          await Swal.fire({
             title: "Akses Ditolak",
             text: "Hanya admin yang dapat mengedit turnamen",
             icon: "error",
-          }).then(() => router.push("/acara"));
+          });
+          router.push("/acara");
           return;
         }
       } else {
-        // User exists, cek peran (role)
-        const isUserAdmin = userData.peran === "admin"; // ✅ Perbaiki: "peran" bukan "role"
+        const isUserAdmin = userData.peran === "admin";
         setIsAdmin(isUserAdmin);
 
         if (!isUserAdmin) {
-          Swal.fire({
+          await Swal.fire({
             title: "Akses Ditolak",
             text: "Hanya admin yang dapat mengedit turnamen",
             icon: "error",
-          }).then(() => router.push("/acara"));
+          });
+          router.push("/acara");
           return;
         }
       }
 
-      // 4. Fetch acara data - TANPA filter dibuat_oleh
-      console.log("Fetching acara with ID:", acaraId);
-      
       const { data: acara, error: acaraError } = await supabase
         .from("acara")
         .select("*")
         .eq("id", acaraId)
         .maybeSingle();
 
-      console.log("Acara data:", acara);
-      console.log("Acara error:", acaraError);
-
-      if (acaraError) {
-        console.error("Error detail:", acaraError);
-        
-        if (acaraError.code === "PGRST116") {
-          Swal.fire({
-            title: "Tidak Ditemukan",
-            text: "Turnamen tidak ditemukan",
-            icon: "error",
-          }).then(() => router.push("/acara"));
-          return;
-        }
-        
-        throw acaraError;
-      }
-
-      if (!acara) {
-        Swal.fire({
+      if (acaraError || !acara) {
+        await Swal.fire({
           title: "Tidak Ditemukan",
           text: "Turnamen tidak ditemukan",
           icon: "error",
-        }).then(() => router.push("/acara"));
+        });
+        router.push("/acara");
         return;
       }
 
-      // 5. Format dates
-      const formatDateTimeLocal = (dateString: string) => {
+      const formatDateTimeLocal = (dateString: string | null): string => {
         if (!dateString) return "";
-        try {
-          const date = new Date(dateString);
-          if (isNaN(date.getTime())) return "";
-          return date.toISOString().slice(0, 16);
-        } catch (e) {
-          return "";
-        }
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return "";
+        return date.toISOString().slice(0, 16);
       };
 
-      setForm({
+      const formattedForm: AcaraForm = {
         nama: acara.nama || "",
         deskripsi: acara.deskripsi || "",
         lokasi_lapangan: acara.lokasi_lapangan || "",
@@ -189,25 +153,79 @@ export default function EditAcaraPage() {
         tanggal_mulai_pertandingan: formatDateTimeLocal(acara.tanggal_mulai_pertandingan),
         tanggal_selesai_pertandingan: formatDateTimeLocal(acara.tanggal_selesai_pertandingan),
         deadline_pendaftaran: formatDateTimeLocal(acara.deadline_pendaftaran),
-      });
+      };
 
-    } catch (error: any) {
-      console.error("Error in checkAdminAccess:", error);
-      
-      Swal.fire({
+      setForm(formattedForm);
+      setInitialForm(formattedForm);
+
+    } catch (error) {
+      console.error("Error:", error);
+      await Swal.fire({
         title: "Error",
-        text: error.message || "Gagal memuat data turnamen",
+        text: "Gagal memuat data turnamen",
         icon: "error",
-        confirmButtonText: "Kembali",
-      }).then(() => {
-        router.push("/acara");
       });
+      router.push("/acara");
     } finally {
       setLoadingData(false);
     }
   };
 
-  const validateForm = () => {
+  const hasChanges = (): boolean => {
+    if (!initialForm) return false;
+    
+    return (
+      form.nama !== initialForm.nama ||
+      form.deskripsi !== initialForm.deskripsi ||
+      form.lokasi_lapangan !== initialForm.lokasi_lapangan ||
+      form.url_lokasi_maps !== initialForm.url_lokasi_maps ||
+      form.tanggal_mulai_pertandingan !== initialForm.tanggal_mulai_pertandingan ||
+      form.tanggal_selesai_pertandingan !== initialForm.tanggal_selesai_pertandingan ||
+      form.deadline_pendaftaran !== initialForm.deadline_pendaftaran
+    );
+  };
+
+  // Konfirmasi ketika batal
+  const handleCancel = async (): Promise<void> => {
+    if (loading) return;
+
+    // Cek apakah ada perubahan
+    if (hasChanges()) {
+      const result = await Swal.fire({
+        title: "Perubahan Belum Disimpan",
+        text: "Apakah Anda yakin ingin membatalkan? Semua perubahan yang telah Anda buat akan hilang.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Ya, Batalkan",
+        cancelButtonText: "Lanjutkan Edit",
+        reverseButtons: true,
+      });
+
+      if (result.isConfirmed) {
+        router.push("/admin/acara");
+      }
+    } else {
+      // Jika tidak ada perubahan, konfirmasi sederhana
+      const result = await Swal.fire({
+        title: "Keluar?",
+        text: "Apakah Anda yakin ingin keluar dari halaman ini?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Ya, Keluar",
+        cancelButtonText: "Tetap di Sini",
+      });
+
+      if (result.isConfirmed) {
+        router.push("/admin/acara");
+      }
+    }
+  };
+
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!form.nama.trim()) {
@@ -230,35 +248,33 @@ export default function EditAcaraPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
     if (!validateForm()) {
-      Swal.fire({
-        title: "Periksa Form",
-        html: `
-          <div class="text-left">
-            <p class="mb-2">Silakan perbaiki error berikut:</p>
-            <div class="bg-red-50 border border-red-100 rounded-lg p-3">
-              <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
-                ${Object.values(errors).map((error) => `<li>${error}</li>`).join("")}
-              </ul>
-            </div>
-          </div>
-        `,
+      await Swal.fire({
+        title: "Validasi Gagal",
+        text: "Silakan lengkapi form yang diperlukan",
         icon: "warning",
       });
       return;
     }
 
-    setLoading(true);
-
-    Swal.fire({
-      title: "Menyimpan...",
-      text: "Sedang menyimpan perubahan turnamen",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
+    // Konfirmasi sebelum menyimpan
+    const confirmResult = await Swal.fire({
+      title: "Simpan Perubahan?",
+      text: "Apakah Anda yakin dengan perubahan yang telah dibuat?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, Simpan",
+      cancelButtonText: "Batal",
     });
+
+    if (!confirmResult.isConfirmed) return;
+
+    setLoading(true);
 
     try {
       const updateData = {
@@ -271,7 +287,6 @@ export default function EditAcaraPage() {
         deadline_pendaftaran: new Date(form.deadline_pendaftaran).toISOString(),
       };
 
-      // Update tanpa filter dibuat_oleh
       const { error } = await supabase
         .from("acara")
         .update(updateData)
@@ -279,26 +294,24 @@ export default function EditAcaraPage() {
 
       if (error) throw error;
 
-      Swal.close();
-      
       await Swal.fire({
         title: "Berhasil!",
         text: "Turnamen berhasil diperbarui",
         icon: "success",
-        confirmButtonText: "OK",
+        timer: 1500,
+        showConfirmButton: false,
       });
 
       router.push("/admin/acara");
       router.refresh();
 
-    } catch (error: any) {
-      console.error("Update error:", error);
-      Swal.close();
-      
-      Swal.fire({
+    } catch (error) {
+      console.error("Error:", error);
+      await Swal.fire({
         title: "Gagal!",
-        text: error.message || "Terjadi kesalahan saat menyimpan perubahan",
+        text: "Terjadi kesalahan saat menyimpan perubahan",
         icon: "error",
+        confirmButtonText: "OK",
       });
     } finally {
       setLoading(false);
@@ -354,20 +367,25 @@ export default function EditAcaraPage() {
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Form fields same as before */}
             <div className="space-y-2">
-              <Label>Nama Turnamen *</Label>
+              <Label htmlFor="nama">Nama Turnamen *</Label>
               <Input
+                id="nama"
                 value={form.nama}
                 onChange={(e) => setForm({ ...form, nama: e.target.value })}
                 required
                 disabled={loading}
+                className={errors.nama ? "border-red-500" : ""}
               />
+              {errors.nama && (
+                <p className="text-red-500 text-sm mt-1">{errors.nama}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label>Deskripsi</Label>
+              <Label htmlFor="deskripsi">Deskripsi</Label>
               <Textarea
+                id="deskripsi"
                 value={form.deskripsi}
                 onChange={(e) => setForm({ ...form, deskripsi: e.target.value })}
                 rows={4}
@@ -377,8 +395,9 @@ export default function EditAcaraPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Lokasi Lapangan</Label>
+                <Label htmlFor="lokasi_lapangan">Lokasi Lapangan</Label>
                 <Input
+                  id="lokasi_lapangan"
                   value={form.lokasi_lapangan}
                   onChange={(e) => setForm({ ...form, lokasi_lapangan: e.target.value })}
                   disabled={loading}
@@ -386,8 +405,9 @@ export default function EditAcaraPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>URL Google Maps</Label>
+                <Label htmlFor="url_lokasi_maps">URL Google Maps</Label>
                 <Input
+                  id="url_lokasi_maps"
                   value={form.url_lokasi_maps}
                   onChange={(e) => setForm({ ...form, url_lokasi_maps: e.target.value })}
                   disabled={loading}
@@ -397,44 +417,67 @@ export default function EditAcaraPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>Deadline Pendaftaran *</Label>
+                <Label htmlFor="deadline_pendaftaran">Deadline Pendaftaran *</Label>
                 <Input
+                  id="deadline_pendaftaran"
                   type="datetime-local"
                   value={form.deadline_pendaftaran}
                   onChange={(e) => setForm({ ...form, deadline_pendaftaran: e.target.value })}
                   required
                   disabled={loading}
+                  className={errors.deadline_pendaftaran ? "border-red-500" : ""}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Tanggal Mulai *</Label>
+                <Label htmlFor="tanggal_mulai">Tanggal Mulai *</Label>
                 <Input
+                  id="tanggal_mulai"
                   type="datetime-local"
                   value={form.tanggal_mulai_pertandingan}
                   onChange={(e) => setForm({ ...form, tanggal_mulai_pertandingan: e.target.value })}
                   required
                   disabled={loading}
+                  className={errors.tanggal_mulai_pertandingan ? "border-red-500" : ""}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Tanggal Selesai *</Label>
+                <Label htmlFor="tanggal_selesai">Tanggal Selesai *</Label>
                 <Input
+                  id="tanggal_selesai"
                   type="datetime-local"
                   value={form.tanggal_selesai_pertandingan}
                   onChange={(e) => setForm({ ...form, tanggal_selesai_pertandingan: e.target.value })}
                   required
                   disabled={loading}
+                  className={errors.tanggal_selesai_pertandingan ? "border-red-500" : ""}
                 />
               </div>
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? "Menyimpan..." : "Update Turnamen"}
+              <Button 
+                type="submit" 
+                disabled={loading} 
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  "Simpan Perubahan"
+                )}
               </Button>
-              <Button type="button" variant="outline" onClick={() => router.push("/acara")} className="flex-1">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleCancel} 
+                className="flex-1"
+                disabled={loading}
+              >
                 Batal
               </Button>
             </div>

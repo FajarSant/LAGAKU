@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Swal from "sweetalert2";
@@ -18,6 +18,7 @@ export default function TambahAcaraPage() {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [initialForm, setInitialForm] = useState<any>(null);
 
   const [form, setForm] = useState({
     nama: "",
@@ -28,6 +29,66 @@ export default function TambahAcaraPage() {
     tanggal_selesai_pertandingan: "",
     deadline_pendaftaran: "",
   });
+
+  // Simpan data awal saat komponen pertama kali di-render
+  useEffect(() => {
+    setInitialForm({ ...form });
+  }, []);
+
+  // Cek apakah ada perubahan
+  const hasChanges = (): boolean => {
+    if (!initialForm) return false;
+    
+    return (
+      form.nama !== initialForm.nama ||
+      form.deskripsi !== initialForm.deskripsi ||
+      form.lokasi_lapangan !== initialForm.lokasi_lapangan ||
+      form.url_lokasi_maps !== initialForm.url_lokasi_maps ||
+      form.tanggal_mulai_pertandingan !== initialForm.tanggal_mulai_pertandingan ||
+      form.tanggal_selesai_pertandingan !== initialForm.tanggal_selesai_pertandingan ||
+      form.deadline_pendaftaran !== initialForm.deadline_pendaftaran
+    );
+  };
+
+  // Konfirmasi ketika batal
+  const handleCancel = async (): Promise<void> => {
+    if (loading) return;
+
+    // Cek apakah ada perubahan
+    if (hasChanges()) {
+      const result = await Swal.fire({
+        title: "Perubahan Belum Disimpan",
+        text: "Apakah Anda yakin ingin membatalkan? Semua data yang telah Anda isi akan hilang.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Ya, Batalkan",
+        cancelButtonText: "Lanjutkan Mengisi",
+        reverseButtons: true,
+      });
+
+      if (result.isConfirmed) {
+        router.push("/admin/acara");
+      }
+    } else {
+      // Jika tidak ada perubahan, konfirmasi sederhana
+      const result = await Swal.fire({
+        title: "Keluar?",
+        text: "Apakah Anda yakin ingin keluar dari halaman ini?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Ya, Keluar",
+        cancelButtonText: "Tetap di Sini",
+      });
+
+      if (result.isConfirmed) {
+        router.push("/admin/acara");
+      }
+    }
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -86,8 +147,6 @@ export default function TambahAcaraPage() {
     
     // Validasi form
     if (!validateForm()) {
-      // Tampilkan error alert
-      const errorMessages = Object.values(errors).join('\n');
       Swal.fire({
         title: 'Periksa Form',
         text: 'Ada beberapa data yang perlu diperbaiki',
@@ -179,7 +238,6 @@ export default function TambahAcaraPage() {
           errorMessage = "Nama turnamen sudah digunakan. Silakan gunakan nama lain.";
         }
         
-        // Tutup loading dan tampilkan error
         Swal.close();
         
         Swal.fire({
@@ -198,10 +256,8 @@ export default function TambahAcaraPage() {
         return;
       }
 
-      // Tutup loading alert
       Swal.close();
       
-      // Tampilkan success alert dengan pilihan
       Swal.fire({
         title: 'Berhasil!',
         html: `
@@ -243,6 +299,15 @@ export default function TambahAcaraPage() {
             deadline_pendaftaran: "",
           });
           setErrors({});
+          setInitialForm({
+            nama: "",
+            deskripsi: "",
+            lokasi_lapangan: "",
+            url_lokasi_maps: "",
+            tanggal_mulai_pertandingan: "",
+            tanggal_selesai_pertandingan: "",
+            deadline_pendaftaran: "",
+          });
           
           // Focus ke input nama
           setTimeout(() => {
@@ -255,7 +320,6 @@ export default function TambahAcaraPage() {
     } catch (error) {
       console.error("Error:", error);
       
-      // Tutup loading dan tampilkan error
       Swal.close();
       
       Swal.fire({
@@ -295,6 +359,7 @@ export default function TambahAcaraPage() {
             <div className="space-y-2">
               <Label>Nama Turnamen *</Label>
               <Input
+                name="nama"
                 placeholder="Contoh: Futsal Cup 2025"
                 value={form.nama}
                 onChange={(e) => setForm({ ...form, nama: e.target.value })}
@@ -413,7 +478,7 @@ export default function TambahAcaraPage() {
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-11"
+                className="w-full h-11 bg-green-600 hover:bg-green-700"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -428,7 +493,7 @@ export default function TambahAcaraPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/acara")}
+                onClick={handleCancel}
                 className="w-full h-11"
                 disabled={loading}
               >

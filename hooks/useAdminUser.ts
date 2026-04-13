@@ -141,7 +141,7 @@ export function useAdminUser() {
           setUser(null);
           setIsAdmin(false);
           setIsLoading(false);
-          router.push("/login");
+          router.push("/auth/login");
         }
       }
     );
@@ -157,7 +157,7 @@ export function useAdminUser() {
     } catch (error) {
       console.error('Logout error:', error);
     }
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   const updateProfile = async (data: Partial<User>) => {

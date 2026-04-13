@@ -187,6 +187,56 @@ export default function EditTimPage() {
   }, [timId, replace, reset, router, supabase]);
 
   // ======================================================
+  // HANDLE CANCEL WITH CONFIRMATION
+  // ======================================================
+  const handleCancel = () => {
+    if (isDirty) {
+      Swal.fire({
+        title: 'Batalkan Perubahan?',
+        text: 'Perubahan yang belum disimpan akan hilang. Apakah Anda yakin ingin membatalkan?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Batalkan',
+        cancelButtonText: 'Lanjutkan Edit',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        reverseButtons: true,
+        customClass: {
+          popup: 'rounded-lg',
+          confirmButton: 'px-5 py-2 rounded',
+          cancelButton: 'px-5 py-2 rounded'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push("/admin/tim");
+        }
+      });
+    } else {
+      // Jika tidak ada perubahan, konfirmasi keluar
+      Swal.fire({
+        title: 'Keluar?',
+        text: 'Apakah Anda yakin ingin keluar dari halaman ini?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Keluar',
+        cancelButtonText: 'Tetap di Sini',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#6b7280',
+        reverseButtons: true,
+        customClass: {
+          popup: 'rounded-lg',
+          confirmButton: 'px-5 py-2 rounded',
+          cancelButton: 'px-5 py-2 rounded'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push("/admin/tim");
+        }
+      });
+    }
+  };
+
+  // ======================================================
   // SWEET ALERT CONFIRMATION
   // ======================================================
   const showConfirmation = (values: FormValues) => {
@@ -321,6 +371,14 @@ export default function EditTimPage() {
           .not("id", "in", `(${keepIds.join(",")})`);
 
         if (deleteError) throw deleteError;
+      } else if (keepIds.length === 0 && values.anggota.length > 0) {
+        // Hapus semua anggota lama jika tidak ada yang dipertahankan
+        const { error: deleteError } = await supabase
+          .from("anggota_tim")
+          .delete()
+          .eq("tim_id", timId);
+
+        if (deleteError) throw deleteError;
       }
 
       // Upsert anggota
@@ -399,7 +457,6 @@ export default function EditTimPage() {
     // Validasi form sebelum konfirmasi
     const hasErrors = Object.keys(errors).length > 0;
     if (hasErrors) {
-      const errorMessages = Object.values(errors).join('\n');
       Swal.fire({
         title: 'Periksa Form',
         text: 'Ada beberapa data yang perlu diperbaiki',
@@ -414,36 +471,6 @@ export default function EditTimPage() {
     }
     
     showConfirmation(values);
-  };
-
-  // ======================================================
-  // HANDLE CANCEL
-  // ======================================================
-  const handleCancel = () => {
-    if (isDirty) {
-      Swal.fire({
-        title: 'Batalkan Perubahan?',
-        text: 'Perubahan yang belum disimpan akan hilang. Apakah Anda yakin?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Batalkan',
-        cancelButtonText: 'Lanjutkan Edit',
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#6b7280',
-        reverseButtons: true,
-        customClass: {
-          popup: 'rounded-lg',
-          confirmButton: 'px-5 py-2 rounded',
-          cancelButton: 'px-5 py-2 rounded'
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          router.back();
-        }
-      });
-    } else {
-      router.back();
-    }
   };
 
   // ======================================================
