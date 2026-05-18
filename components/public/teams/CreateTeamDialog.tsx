@@ -183,15 +183,15 @@ export default function CreateTeamDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle className="text-xl">Buat Tim Baru</DialogTitle>
           <DialogDescription>
             Bentuk tim untuk persiapan mengikuti turnamen
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {/* Info Tim */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
@@ -334,7 +334,7 @@ export default function CreateTeamDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="px-6 py-4 border-t mt-auto">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
