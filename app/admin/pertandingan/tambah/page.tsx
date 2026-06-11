@@ -236,7 +236,7 @@ export default function TambahPertandinganPage() {
       alert('✅ Bracket berhasil digenerate!');
       
       // Navigate to bracket page
-      router.push(`/pertandingan/bracket/${form.acara_id}`);
+      router.push(`/admin//bracket/${form.acara_id}`);
       router.refresh();
 
     } catch (error) {

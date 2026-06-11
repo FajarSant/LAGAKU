@@ -252,7 +252,7 @@ export default function DetailAcaraPage() {
   };
 
   const shareAcara = async () => {
-    const shareUrl = `${window.location.origin}/acara/${acara?.id}`;
+    const shareUrl = `${window.location.origin}/admin/acara/${acara?.id}`;
 
     if (navigator.share) {
       try {
@@ -295,7 +295,7 @@ export default function DetailAcaraPage() {
             variant="outline"
             className="gap-2 mb-6"
           >
-            <Link href="/acara">
+            <Link href="/admin/acara">
               <FiArrowLeft />
               Kembali ke Daftar Acara
             </Link>
@@ -318,7 +318,7 @@ export default function DetailAcaraPage() {
                 asChild
                 className="bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-3 rounded-xl dark:from-blue-500 dark:to-cyan-600"
               >
-                <Link href="/acara">Lihat Semua Acara</Link>
+                <Link href="/admin/acara">Lihat Semua Acara</Link>
               </Button>
             </CardContent>
           </Card>
@@ -394,7 +394,7 @@ export default function DetailAcaraPage() {
             variant="outline"
             className="gap-3"
           >
-            <Link href="/acara">
+            <Link href="/admin/acara">
               <FiArrowLeft />
               Kembali ke Daftar Acara
             </Link>

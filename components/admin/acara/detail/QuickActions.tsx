@@ -83,7 +83,7 @@ export default function QuickActions({ acaraId, tipeAcara, acaraNama }: QuickAct
   const actions = [
     {
       label: "Kelola Peserta",
-      href: `/acara/${acaraId}/peserta`,
+      href: `/admin/peserta`,
       icon: <FiUsers className="w-5 h-5" />,
       gradient: "bg-gradient-to-br from-blue-600 to-cyan-600",
       gradientLight: "from-blue-500 to-cyan-500",
@@ -94,7 +94,7 @@ export default function QuickActions({ acaraId, tipeAcara, acaraNama }: QuickAct
     },
     {
       label: "Kelola Pertandingan",
-      href: `/acara/${acaraId}/pertandingan`,
+      href: `/admin/pertandingan/detail/${acaraId}`,
       icon: <FiCalendar className="w-5 h-5" />,
       gradient: "bg-gradient-to-br from-green-600 to-emerald-600",
       gradientLight: "from-green-500 to-emerald-500",
@@ -109,7 +109,7 @@ export default function QuickActions({ acaraId, tipeAcara, acaraNama }: QuickAct
   if (tipeAcara === "SISTEM_GUGUR") {
     actions.push({
       label: "Lihat Bracket",
-      href: `/acara/${acaraId}/bracket`,
+      href: `/admin/bracket`,
       icon: <FiAward className="w-5 h-5" />,
       gradient: "bg-gradient-to-br from-yellow-600 to-orange-600",
       gradientLight: "from-yellow-500 to-orange-500",

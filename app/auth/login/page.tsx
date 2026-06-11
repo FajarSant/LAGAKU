@@ -166,15 +166,7 @@ export default function LoginPage() {
             </span>
           </Button>
 
-          <p className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
-            Belum punya akun?
-            <Link
-              href="/auth/register"
-              className="text-blue-600 dark:text-blue-400 ml-1 hover:underline"
-            >
-              Daftar
-            </Link>
-          </p>
+
         </CardContent>
       </Card>
     </div>
