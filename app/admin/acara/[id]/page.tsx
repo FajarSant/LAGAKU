@@ -76,7 +76,7 @@ export default function DetailAcaraPage() {
             "px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-200",
         },
       }).then(() => {
-        router.push("/acara");
+        router.push("/admin/acara");
       });
     } finally {
       setLoading(false);

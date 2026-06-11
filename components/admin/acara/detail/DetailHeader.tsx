@@ -37,7 +37,7 @@ export default function DetailHeader({
               className="bg-background hover:bg-secondary border rounded-xl w-12 h-12"
               asChild
             >
-              <Link href="/acara">
+              <Link href="/admin/acara">
                 <FiArrowLeft className="w-5 h-5" />
               </Link>
             </Button>
