@@ -922,7 +922,7 @@ export default function BracketPage() {
                                       variant="outline"
                                       onClick={() =>
                                         router.push(
-                                          `/pertandingan/edit/${match.id}`,
+                                          `/admin/pertandingan/edit/${match.id}`,
                                         )
                                       }
                                       disabled={match.id.includes(
