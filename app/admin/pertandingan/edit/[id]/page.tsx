@@ -44,7 +44,7 @@ pemenang_id: pemenang,
 .eq("id", id);
 
 
-router.push("/pertandingan");
+router.push("/admin/pertandingan");
 router.refresh();
 };
 
