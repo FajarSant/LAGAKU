@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Users, Loader2, UserPlus } from "lucide-react";
 import { TournamentDetails, UserProfile, UserTeam } from "@/utils";
+import Link from "next/link";
 
 interface TeamRegistrationProps {
   tournament: TournamentDetails;
@@ -18,12 +19,12 @@ interface TeamRegistrationProps {
   onRegistrationSuccess: () => void;
 }
 
-export default function TeamRegistration({ 
-  tournament, 
-  tournamentId, 
+export default function TeamRegistration({
+  tournament,
+  tournamentId,
   userProfile,
   userTeams = [], // Default value untuk menghindari error
-  onRegistrationSuccess 
+  onRegistrationSuccess
 }: TeamRegistrationProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -116,9 +117,9 @@ export default function TeamRegistration({
 
     } catch (error: any) {
       console.error("Registration error:", error);
-      
+
       let errorMessage = "Terjadi kesalahan saat mendaftarkan tim";
-      
+
       if (error.code === '23505') {
         errorMessage = "Nama tim sudah digunakan";
       } else if (error.code === '23503') {
@@ -128,9 +129,9 @@ export default function TeamRegistration({
       } else {
         errorMessage = error.message || errorMessage;
       }
-      
+
       setError(errorMessage);
-      
+
       Swal.fire({
         title: 'Gagal',
         text: errorMessage,
@@ -162,7 +163,7 @@ export default function TeamRegistration({
         <Alert className="mb-6 bg-blue-50 text-blue-800 border-blue-200">
           <Users className="h-4 w-4" />
           <AlertDescription>
-            <strong>Perhatian:</strong> Hanya tim yang Anda adalah anggota atau ketuanya yang dapat didaftarkan. 
+            <strong>Perhatian:</strong> Hanya tim yang Anda adalah anggota atau ketuanya yang dapat didaftarkan.
             {userTeams.length === 0 && " Anda belum memiliki tim."}
           </AlertDescription>
         </Alert>
@@ -171,17 +172,18 @@ export default function TeamRegistration({
         {userTeams.length === 0 ? (
           <Alert>
             <AlertDescription className="text-center py-4">
-              Anda belum memiliki tim yang dapat didaftarkan. 
+              Anda belum memiliki tim yang dapat didaftarkan.
               <div className="mt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => router.push('/teams/create')}
-                  className="gap-2"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Buat Tim Baru
-                </Button>
+                <Link href="/my-teams">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    Buat Tim Baru
+                  </Button>
+                </Link>
               </div>
             </AlertDescription>
           </Alert>
@@ -202,7 +204,7 @@ export default function TeamRegistration({
                         <CheckCircle className="h-5 w-5 text-green-600" />
                       )}
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="text-sm">
                         <span className="font-medium">Jurusan:</span> {team.jurusan || "-"}
@@ -229,7 +231,7 @@ export default function TeamRegistration({
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   Detail Tim Terpilih
                 </h4>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
@@ -251,7 +253,7 @@ export default function TeamRegistration({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="text-sm text-muted-foreground">Daftar Anggota</div>
                     <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
